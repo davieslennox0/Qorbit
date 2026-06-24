@@ -1,0 +1,33 @@
+# Quatripe reverse proxy config.
+#
+# REPLACE_WITH_DOMAIN: swap this for the real domain once you have one (not duckdns -
+# per your note you'll provide the actual domain separately). Until then this also works
+# fine pointed at a bare IP or "localhost" for local testing:
+#   caddy run --config Caddyfile --adapter caddyfile
+#
+# Build the frontend first: cd frontend && npm run build (outputs to frontend/dist).
+
+REPLACE_WITH_DOMAIN {
+	encode gzip
+
+	# A2A AgentCard + any other /.well-known/* files -> backend
+	handle /.well-known/* {
+		reverse_proxy localhost:3001
+	}
+
+	# API -> backend (node, pm2-managed: see ecosystem.config.js)
+	handle /api/* {
+		reverse_proxy localhost:3001
+	}
+
+	# Everything else -> static frontend build, with SPA fallback to index.html
+	handle {
+		root * /root/quat/frontend/dist
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output file /var/log/caddy/quatripe-access.log
+	}
+}

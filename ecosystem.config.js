@@ -1,0 +1,29 @@
+// pm2 process manager config. Run from the repo root: `pm2 start ecosystem.config.js`.
+//
+// Note: VQC/QAOA (quantum-services/quantum/vqc.py, qaoa.py) are NOT served by the
+// quantum-services FastAPI app below - the backend spawns them directly per-request via
+// python-shell (see backend/src/services/quantumBridge.js). quantum-services here is just
+// a small standalone health/status process, kept running for ops visibility.
+module.exports = {
+  apps: [
+    {
+      name: 'quatripe-backend',
+      cwd: './backend',
+      script: 'src/server.js',
+      env: {
+        NODE_ENV: 'production',
+      },
+      autorestart: true,
+      max_restarts: 10,
+    },
+    {
+      name: 'quatripe-quantum-services',
+      cwd: './quantum-services',
+      script: '.venv/bin/uvicorn',
+      args: 'main:app --host 0.0.0.0 --port 8010',
+      interpreter: 'none',
+      autorestart: true,
+      max_restarts: 10,
+    },
+  ],
+};

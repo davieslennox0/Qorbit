@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+*.log
+__pycache__/
+*.pyc
+.venv/
+venv/
+artifacts/
+cache/
+.DS_Store
+.claude/
+demo-agents.local.json
