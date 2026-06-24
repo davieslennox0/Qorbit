@@ -1,4 +1,4 @@
-// Defaults for Arc testnet - see contracts/deployments/arc-testnet.json in the Quatripe repo.
+// Defaults for Arc testnet - see contracts/deployments/arc-testnet.json in the Qorbitpay repo.
 export const DEFAULT_NETWORK = {
   rpcUrl: 'https://rpc.testnet.arc.network',
   chainId: 5042002,

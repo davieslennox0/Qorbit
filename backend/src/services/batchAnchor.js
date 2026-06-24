@@ -47,7 +47,7 @@ async function flush() {
 
 /// Queues a quantum nonce for SHA-256 Merkle batch anchoring on Arc. Resolves once the
 /// batch (size BATCH_SIZE, or whatever has accumulated after FLUSH_DEBOUNCE_MS) has been
-/// anchored on-chain via QuatripeRouter.anchorBatch, with a Merkle proof tying this nonce
+/// anchored on-chain via QorbitpayRouter.anchorBatch, with a Merkle proof tying this nonce
 /// to the anchored root.
 function anchorNonce(nonceHex) {
   return new Promise((resolve, reject) => {

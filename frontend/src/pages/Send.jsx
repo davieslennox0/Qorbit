@@ -47,7 +47,7 @@ function Send() {
     <div className="max-w-lg space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Send</h1>
-        <p className="text-slate-500 text-sm mt-1">Settles via QuatripeRouter on Arc, with all 4 quantum layers.</p>
+        <p className="text-slate-500 text-sm mt-1">Settles via Qorbitpay's router contract on Arc, with all 4 quantum layers.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-surface p-5">

@@ -7,7 +7,7 @@
 module.exports = {
   apps: [
     {
-      name: 'quatripe-backend',
+      name: 'qorbitpay-backend',
       cwd: './backend',
       script: 'src/server.js',
       env: {
@@ -17,7 +17,7 @@ module.exports = {
       max_restarts: 10,
     },
     {
-      name: 'quatripe-quantum-services',
+      name: 'qorbitpay-quantum-services',
       cwd: './quantum-services',
       script: '.venv/bin/uvicorn',
       args: 'main:app --host 0.0.0.0 --port 8010',

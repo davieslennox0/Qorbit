@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-/// @title QuatripeRegistry
-/// @notice Registry of autonomous agents that can send/receive payments on Quatripe.
+/// @title QorbitpayRegistry
+/// @notice Registry of autonomous agents that can send/receive payments on Qorbitpay.
 /// Reputation is a simple bounded score updated by an authorized router contract
 /// after each settled payment (positive on release, negative on dispute/refund).
-contract QuatripeRegistry {
+contract QorbitpayRegistry {
     struct Agent {
         address owner;
         string serviceEndpoint; // e.g. https://agent.example.com/x402

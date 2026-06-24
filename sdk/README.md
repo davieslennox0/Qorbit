@@ -1,18 +1,18 @@
-# quatripe-sdk
+# qorbitpay-sdk
 
-Payments SDK for autonomous AI agents on [Quatripe](https://github.com/), running on Arc
+Payments SDK for autonomous AI agents on [Qorbitpay](https://github.com/), running on Arc
 (Circle's L1 testnet, chainId `5042002`, native gas token USDC).
 
 ```bash
-npm install quatripe-sdk
+npm install qorbitpay-sdk
 ```
 
 ## Quickstart
 
 ```js
-import { Quatripe } from 'quatripe-sdk';
+import { Qorbitpay } from 'qorbitpay-sdk';
 
-const q = new Quatripe({ privateKey: process.env.AGENT_KEY });
+const q = new Qorbitpay({ privateKey: process.env.AGENT_KEY });
 
 // send a payment (self-sovereign - signed and broadcast with your own wallet)
 await q.pay({ to: '0xAgent', amount: 0.01, memo: 'service' });
@@ -28,7 +28,7 @@ Testnet) before sending payments.
 
 ## Why no custodial relayer here
 
-Quatripe's hosted backend (`POST /api/pay`) is a *custodial* relayer that adds QRNG-anchored
+Qorbitpay's hosted backend (`POST /api/pay`) is a *custodial* relayer that adds QRNG-anchored
 nonces, VQC fraud screening, QAOA-based provider routing, and Dilithium2 (post-quantum)
 dual-signing with on-chain attestation for higher-value payments. This SDK instead talks
 directly to the on-chain contracts with your agent's own key - lighter weight, no
@@ -37,20 +37,20 @@ native-token payments, registering in the agent directory).
 
 `checkFraud()` and `findRoute()` below call the *same* quantum services the hosted backend
 uses, over HTTP, for agents that want those signals without running Qiskit themselves -
-pass `apiUrl` pointing at a Quatripe backend deployment to use them.
+pass `apiUrl` pointing at a Qorbitpay backend deployment to use them.
 
 ## API
 
-### `new Quatripe(options)`
+### `new Qorbitpay(options)`
 
 | option | required | default | description |
 |---|---|---|---|
 | `privateKey` | yes | - | your agent's wallet private key |
 | `rpcUrl` | no | Arc testnet RPC | |
 | `chainId` | no | `5042002` | |
-| `routerAddress` | no | deployed QuatripeRouter | |
-| `registryAddress` | no | deployed QuatripeRegistry | |
-| `apiUrl` | no | `null` | base URL of a Quatripe backend, required for `checkFraud`/`findRoute` |
+| `routerAddress` | no | deployed QorbitpayRouter | |
+| `registryAddress` | no | deployed QorbitpayRegistry | |
+| `apiUrl` | no | `null` | base URL of a Qorbitpay backend, required for `checkFraud`/`findRoute` |
 
 ### `await q.pay({ to, amount, memo })`
 Sends `amount` (native token units, string or number) to `to`. `memo` is hashed
@@ -71,8 +71,8 @@ Reads from the agent directory. Defaults to your own address.
 Native token balance of your agent's wallet, formatted as a string.
 
 ### `await q.checkFraud({ amount_zscore, agent_age_days, tx_frequency, dispute_rate })`
-VQC (variational quantum circuit) fraud score via a Quatripe backend. Requires `apiUrl`.
+VQC (variational quantum circuit) fraud score via a Qorbitpay backend. Requires `apiUrl`.
 
 ### `await q.findRoute(providers)`
 QAOA-optimal pick among `providers: [{ id, price, latency, reputation }, ...]` via a
-Quatripe backend. Requires `apiUrl`.
+Qorbitpay backend. Requires `apiUrl`.

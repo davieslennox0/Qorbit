@@ -4,7 +4,7 @@ import { getWallet, withWalletLock, EXPLORER } from '../src/services/arc-chain.j
 import { registryContract } from '../src/services/contracts.js';
 import fs from 'fs';
 
-/// Seeds 5 demo agents into QuatripeRegistry for video/demo purposes. Generates a fresh
+/// Seeds 5 demo agents into QorbitpayRegistry for video/demo purposes. Generates a fresh
 /// wallet per agent (these are just identities to register - they don't need funding,
 /// since registration is custodial: our relayer wallet pays gas and registers them).
 /// Private keys are written to demo-agents.local.json (gitignored) only so they can be

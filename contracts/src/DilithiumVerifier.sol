@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 /// @title DilithiumVerifier
 /// @notice On-chain attestation registry for post-quantum (ML-DSA / Dilithium, FIPS 204)
-/// signatures used to authorize Quatripe payments.
+/// signatures used to authorize Qorbitpay payments.
 ///
 /// IMPORTANT ARCHITECTURE NOTE: ML-DSA verification requires polynomial arithmetic over
 /// a degree-256 ring mod q=8380417 (NTT, rejection sampling, hint-bit checks). That is not

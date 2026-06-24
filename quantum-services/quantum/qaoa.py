@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""QAOA (Quantum Approximate Optimization Algorithm) payment router for Quatripe.
+"""QAOA (Quantum Approximate Optimization Algorithm) payment router for Qorbitpay.
 
 Reads one JSON object from stdin: {"providers": [{id, price, latency, reputation}, ...]}
 Writes one JSON object to stdout:

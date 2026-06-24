@@ -2,15 +2,15 @@ import { ethers } from 'ethers';
 import { ROUTER_ABI, REGISTRY_ABI } from './abi.js';
 import { DEFAULT_NETWORK } from './config.js';
 
-/// Quatripe SDK - a thin client for AI agents to send/receive payments directly on Arc,
+/// Qorbitpay SDK - a thin client for AI agents to send/receive payments directly on Arc,
 /// using the agent's own funded wallet (self-sovereign), rather than going through
-/// Quatripe's custodial backend relayer. The relayer's extra protections (QRNG-anchored
+/// Qorbitpay's custodial backend relayer. The relayer's extra protections (QRNG-anchored
 /// nonces, VQC fraud screening, QAOA routing, Dilithium dual-signing/attestation) are
 /// features of the hosted POST /api/pay endpoint, not requirements of the on-chain
 /// protocol itself - calling the contracts directly here is a fully valid, lighter-weight
-/// way to use Quatripe. checkFraud()/findRoute() below call the hosted quantum services
+/// way to use Qorbitpay. checkFraud()/findRoute() below call the hosted quantum services
 /// over HTTP for agents that want those signals without running Qiskit themselves.
-class Quatripe {
+class Qorbitpay {
   constructor({
     privateKey,
     rpcUrl = DEFAULT_NETWORK.rpcUrl,
@@ -19,7 +19,7 @@ class Quatripe {
     registryAddress = DEFAULT_NETWORK.registryAddress,
     apiUrl = null,
   } = {}) {
-    if (!privateKey) throw new Error('Quatripe SDK requires a privateKey');
+    if (!privateKey) throw new Error('Qorbitpay SDK requires a privateKey');
 
     this.provider = new ethers.JsonRpcProvider(rpcUrl, { chainId, name: 'arc-testnet' });
     this.wallet = new ethers.Wallet(privateKey, this.provider);
@@ -44,7 +44,7 @@ class Quatripe {
     return run;
   }
 
-  /// Sends a native-token (USDC) payment to `to` via QuatripeRouter.pay(). `memo` is
+  /// Sends a native-token (USDC) payment to `to` via QorbitpayRouter.pay(). `memo` is
   /// hashed (keccak256) on-chain as an opaque reference - pass the same memo string
   /// elsewhere if you need to look the payment back up.
   async pay({ to, amount, memo } = {}) {
@@ -98,7 +98,7 @@ class Quatripe {
     return () => this.router.off(filter, listener);
   }
 
-  /// Registers this agent in QuatripeRegistry under its own address (self-sovereign -
+  /// Registers this agent in QorbitpayRegistry under its own address (self-sovereign -
   /// owner and agent are the same wallet). For custodial registration on the agent's
   /// behalf, see the backend's POST /api/receive instead.
   async register({ serviceEndpoint } = {}) {
@@ -132,7 +132,7 @@ class Quatripe {
 
   async _apiPost(path, body) {
     if (!this.apiUrl) {
-      throw new Error(`${path} requires apiUrl to be set in the Quatripe constructor`);
+      throw new Error(`${path} requires apiUrl to be set in the Qorbitpay constructor`);
     }
     const res = await fetch(`${this.apiUrl}${path}`, {
       method: 'POST',
@@ -155,4 +155,4 @@ class Quatripe {
   }
 }
 
-export { Quatripe };
+export { Qorbitpay };

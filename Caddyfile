@@ -1,13 +1,8 @@
-# Quatripe reverse proxy config.
-#
-# REPLACE_WITH_DOMAIN: swap this for the real domain once you have one (not duckdns -
-# per your note you'll provide the actual domain separately). Until then this also works
-# fine pointed at a bare IP or "localhost" for local testing:
-#   caddy run --config Caddyfile --adapter caddyfile
+# Qorbitpay reverse proxy config.
 #
 # Build the frontend first: cd frontend && npm run build (outputs to frontend/dist).
 
-REPLACE_WITH_DOMAIN {
+qorbitpay.xyz {
 	encode gzip
 
 	# A2A AgentCard + any other /.well-known/* files -> backend
@@ -28,6 +23,6 @@ REPLACE_WITH_DOMAIN {
 	}
 
 	log {
-		output file /var/log/caddy/quatripe-access.log
+		output file /var/log/caddy/qorbitpay-access.log
 	}
 }

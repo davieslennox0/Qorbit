@@ -1,19 +1,30 @@
-# Quatripe
+# Qorbitpay
 
-Stripe/PayPal for autonomous AI agents, built on Arc (Circle's stablecoin-native L1
-testnet). Every payment runs through four quantum-computing layers: true quantum
-randomness, quantum fraud detection, quantum-optimized routing, and post-quantum
-signatures.
+Your AI agent needs to pay other agents. Right now that means you're in the loop —
+managing wallets, authorizing transfers, handling receipts. Qorbitpay removes you
+entirely.
 
-**Demo video:** _TODO - link not yet provided._
+Any agent. Any framework. Three lines of code.
+
+```js
+import { Qorbitpay } from 'qorbitpay-sdk'
+
+const q = new Qorbitpay({ privateKey: process.env.AGENT_KEY })
+
+await q.pay({ to: '0xAgent', amount: 0.01, memo: 'data analysis' })
+```
+
+Built on Arc (Circle's stablecoin-native L1 testnet). Every payment runs through four
+quantum-computing layers: true quantum randomness, quantum fraud detection,
+quantum-optimized routing, and post-quantum signatures.
 
 ## Structure
 
 - `backend/` — Node.js + Express API (port 3001): payments, agent directory, x402, the 4 quantum layers
 - `frontend/` — React + Tailwind dashboard (Vite)
-- `sdk/` — `quatripe-sdk`, the agent-facing payments client (npm package, not yet published)
+- `sdk/` — `qorbitpay-sdk`, the agent-facing payments client (npm package, not yet published)
 - `quantum-services/` — Python: VQC fraud detection + QAOA routing (Qiskit Aer), spawned per-request by the backend
-- `contracts/` — Solidity (Foundry): QuatripeRouter, QuatripeRegistry, DilithiumVerifier
+- `contracts/` — Solidity (Foundry): QorbitpayRouter, QorbitpayRegistry, DilithiumVerifier
 
 ## Arc testnet
 
@@ -27,8 +38,8 @@ signatures.
 
 | Contract | Address | Explorer |
 |---|---|---|
-| QuatripeRouter | `0xCEe1f311261Ffe460ef5060F94183320e74fD703` | [view](https://testnet.arcscan.app/address/0xCEe1f311261Ffe460ef5060F94183320e74fD703) |
-| QuatripeRegistry | `0x8C0E962FcA17930BDB829Cf2E03F7B3b16138968` | [view](https://testnet.arcscan.app/address/0x8C0E962FcA17930BDB829Cf2E03F7B3b16138968) |
+| QorbitpayRouter | `0xCEe1f311261Ffe460ef5060F94183320e74fD703` | [view](https://testnet.arcscan.app/address/0xCEe1f311261Ffe460ef5060F94183320e74fD703) |
+| QorbitpayRegistry | `0x8C0E962FcA17930BDB829Cf2E03F7B3b16138968` | [view](https://testnet.arcscan.app/address/0x8C0E962FcA17930BDB829Cf2E03F7B3b16138968) |
 | DilithiumVerifier | `0xca8FbCFb990A77B130939Ec5E0B98e4324fE0c79` | [view](https://testnet.arcscan.app/address/0xca8FbCFb990A77B130939Ec5E0B98e4324fE0c79) |
 
 Full deployment record (tx hashes, ABIs context): `contracts/deployments/arc-testnet.json`.
@@ -84,13 +95,13 @@ cd backend && node scripts/seed-demo-agents.js
 ## SDK quickstart
 
 ```bash
-npm install quatripe-sdk
+npm install qorbitpay-sdk
 ```
 
 ```js
-import { Quatripe } from 'quatripe-sdk';
+import { Qorbitpay } from 'qorbitpay-sdk';
 
-const q = new Quatripe({ privateKey: process.env.AGENT_KEY });
+const q = new Qorbitpay({ privateKey: process.env.AGENT_KEY });
 
 await q.pay({ to: '0xAgent', amount: 0.01, memo: 'service' });
 
@@ -105,8 +116,8 @@ themselves. See `sdk/README.md` for the full API.
 ## Agent discovery (A2A)
 
 `GET /.well-known/agent.json` serves an A2A (Agent2Agent protocol) AgentCard describing
-Quatripe's skills (`pay`, `receive`, `agents`, `fraud-check`, `route`) and its x402
-payment requirement, so other agents can discover and integrate with Quatripe
+Qorbitpay's skills (`pay`, `receive`, `agents`, `fraud-check`, `route`) and its x402
+payment requirement, so other agents can discover and integrate with Qorbitpay
 programmatically.
 
 ## Deployment

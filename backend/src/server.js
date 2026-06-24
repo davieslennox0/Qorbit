@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'quatripe-backend' });
+  res.json({ status: 'ok', service: 'qorbitpay-backend' });
 });
 
 app.use('/api/arc', arcRouter);
@@ -23,6 +23,6 @@ app.use('/api', quantumRouter);
 app.use('/.well-known', wellKnownRouter);
 
 app.listen(PORT, () => {
-  console.log(`Quatripe backend listening on port ${PORT}`);
+  console.log(`Qorbitpay backend listening on port ${PORT}`);
   warmPool();
 });

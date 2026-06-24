@@ -6,7 +6,7 @@
 /// on an ERC-20 USDC contract. Arc's USDC is the chain's *native* gas token, not an ERC-20,
 /// so transferWithAuthorization doesn't apply directly here. This middleware still parses
 /// and validates the standard X-PAYMENT payload shape (so x402-speaking agent clients work
-/// unmodified); settlement of the authorized amount happens through QuatripeRouter rather
+/// unmodified); settlement of the authorized amount happens through QorbitpayRouter rather
 /// than by calling the asset contract, which is what /api/pay does with the parsed payload.
 
 const X402_VERSION = 1;

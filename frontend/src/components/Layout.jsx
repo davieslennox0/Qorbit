@@ -1,11 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/send', label: 'Send' },
-  { to: '/receive', label: 'Receive' },
-  { to: '/router', label: 'Router' },
-  { to: '/fraud', label: 'Fraud' },
+  { to: '/app', label: 'Dashboard' },
+  { to: '/app/send', label: 'Send' },
+  { to: '/app/receive', label: 'Receive' },
+  { to: '/app/router', label: 'Router' },
+  { to: '/app/fraud', label: 'Fraud' },
 ];
 
 function Layout() {
@@ -14,7 +14,7 @@ function Layout() {
       <aside className="w-56 shrink-0 border-r border-border bg-surface flex flex-col">
         <div className="px-5 py-6">
           <div className="text-xl font-semibold tracking-tight">
-            Quatripe<span className="text-cyan">.</span>
+            Qorbitpay<span className="text-cyan">.</span>
           </div>
           <div className="text-xs text-slate-500 mt-1">Arc testnet</div>
         </div>
@@ -23,7 +23,7 @@ function Layout() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/'}
+              end={item.to === '/app'}
               className={({ isActive }) =>
                 `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   isActive

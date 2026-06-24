@@ -1,7 +1,7 @@
 {
-  "name": "quatripe-sdk",
+  "name": "qorbitpay-sdk",
   "version": "0.1.0",
-  "description": "SDK for autonomous AI agents to send and receive payments on Quatripe (Arc testnet)",
+  "description": "SDK for autonomous AI agents to send and receive payments on Qorbitpay (Arc testnet)",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -15,7 +15,7 @@
     "node": ">=18"
   },
   "keywords": [
-    "quatripe",
+    "qorbitpay",
     "arc",
     "circle",
     "usdc",

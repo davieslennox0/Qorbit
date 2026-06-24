@@ -9,13 +9,13 @@
       "address": "0xca8FbCFb990A77B130939Ec5E0B98e4324fE0c79",
       "txHash": "0xa23300c08c727e983087911621a4e46b7b8259af81627e4d8d85ddc37b170dff"
     },
-    "QuatripeRegistry": {
+    "QorbitpayRegistry": {
       "address": "0x8C0E962FcA17930BDB829Cf2E03F7B3b16138968",
       "txHash": "0x65ca376c4413477c578340220c572a59839fe239428f7a69f2ec2edf03c73093",
       "note": "v2 - registerAgent(address agent, string endpoint), supports custodial onboarding via POST /api/receive",
       "previousAddress": "0xe9Dfb07cD3fefc6Dee31c3B0a11BD8D7bD20BAce"
     },
-    "QuatripeRouter": {
+    "QorbitpayRouter": {
       "address": "0xCEe1f311261Ffe460ef5060F94183320e74fD703",
       "txHash": "0x97554ef90f49413265fc68183ae683ddba57a07206c1cea8ffa2801f22d7fa19",
       "constructorArgs": {

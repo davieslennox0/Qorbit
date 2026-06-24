@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""VQC (Variational Quantum Circuit) fraud detector for Quatripe payments.
+"""VQC (Variational Quantum Circuit) fraud detector for Qorbitpay payments.
 
 Reads one JSON object from stdin: {amount_zscore, agent_age_days, tx_frequency, dispute_rate}
 Writes one JSON object to stdout: {fraud_score, confidence, method, flagged}

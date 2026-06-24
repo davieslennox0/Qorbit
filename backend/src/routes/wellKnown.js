@@ -5,14 +5,14 @@ const router = express.Router();
 
 const PQ_ATTESTATION_THRESHOLD = Number(process.env.PQ_ATTESTATION_THRESHOLD || 0.10);
 
-/// GET /.well-known/agent.json - A2A (Agent2Agent) AgentCard describing Quatripe's
+/// GET /.well-known/agent.json - A2A (Agent2Agent) AgentCard describing Qorbitpay's
 /// skills. `url` is derived from the actual request rather than hardcoded, so this stays
 /// correct in dev, behind a reverse proxy, or once a real domain is attached.
 router.get('/agent.json', (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
   res.json({
-    name: 'Quatripe',
+    name: 'Qorbitpay',
     description:
       'Payment infrastructure for autonomous AI agents on Arc (Circle\'s L1 testnet, ' +
       `chainId ${CHAIN_ID}, native USDC gas). Exposes on-chain payments and an agent ` +
@@ -21,7 +21,7 @@ router.get('/agent.json', (req, res) => {
       'payment attestation.',
     url: `${baseUrl}/api`,
     provider: {
-      organization: 'Quatripe',
+      organization: 'Qorbitpay',
       url: baseUrl,
     },
     version: '0.1.0',
@@ -39,7 +39,7 @@ router.get('/agent.json', (req, res) => {
         description:
           'HTTP 402 Payment Required (coinbase/x402 "exact" scheme). Send an X-PAYMENT ' +
           'header (base64-encoded JSON authorization) to pay for a metered skill; ' +
-          'settlement runs through QuatripeRouter on Arc rather than EIP-3009 ' +
+          'settlement runs through QorbitpayRouter on Arc rather than EIP-3009 ' +
           'transferWithAuthorization, since Arc\'s USDC is the chain\'s native gas token, ' +
           'not an ERC-20.',
       },
@@ -61,7 +61,7 @@ router.get('/agent.json', (req, res) => {
       {
         id: 'receive',
         name: 'Register as payee',
-        description: 'Custodial registration of an agent in the on-chain QuatripeRegistry directory.',
+        description: 'Custodial registration of an agent in the on-chain QorbitpayRegistry directory.',
         tags: ['agents', 'directory'],
         inputModes: ['application/json'],
         outputModes: ['application/json'],

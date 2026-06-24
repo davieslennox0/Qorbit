@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {QuatripeRegistry} from "./QuatripeRegistry.sol";
+import {QorbitpayRegistry} from "./QorbitpayRegistry.sol";
 
-/// @title QuatripeRouter
+/// @title QorbitpayRouter
 /// @notice Routes native-token (USDC gas token on Arc) payments between agents:
 /// direct payments, multi-recipient splits, and escrow with release/refund.
 /// Also anchors SHA-256 batch commitments of QRNG-derived payment nonces on-chain.
-contract QuatripeRouter {
+contract QorbitpayRouter {
     struct Escrow {
         address payer;
         address payee;
@@ -20,7 +20,7 @@ contract QuatripeRouter {
 
     address public admin;
     address public anchor; // backend service address allowed to anchor nonce batches
-    QuatripeRegistry public registry;
+    QorbitpayRegistry public registry;
 
     uint256 public escrowCount;
     mapping(uint256 => Escrow) public escrows;
@@ -57,7 +57,7 @@ contract QuatripeRouter {
     constructor(address registryAddress) {
         admin = msg.sender;
         anchor = msg.sender;
-        registry = QuatripeRegistry(registryAddress);
+        registry = QorbitpayRegistry(registryAddress);
     }
 
     function setAnchor(address _anchor) external onlyAdmin {
@@ -66,7 +66,7 @@ contract QuatripeRouter {
     }
 
     function setRegistry(address registryAddress) external onlyAdmin {
-        registry = QuatripeRegistry(registryAddress);
+        registry = QorbitpayRegistry(registryAddress);
         emit RegistryUpdated(registryAddress);
     }
 

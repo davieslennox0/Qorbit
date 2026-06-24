@@ -18,7 +18,7 @@ const PQ_ATTESTATION_THRESHOLD = Number(process.env.PQ_ATTESTATION_THRESHOLD || 
 // every payment without blocking callers that have no risk telemetry to send yet.
 const DEFAULT_FRAUD_SIGNALS = { amount_zscore: 0, agent_age_days: 365, tx_frequency: 1, dispute_rate: 0 };
 
-/// POST /api/pay - send a native-token (USDC) payment via QuatripeRouter, running all
+/// POST /api/pay - send a native-token (USDC) payment via QorbitpayRouter, running all
 /// four quantum layers in the process:
 ///   1. QRNG    - quantum nonce anchors this payment's memo and doubles as the PQ
 ///                authorization's anti-replay nonce.
@@ -198,7 +198,7 @@ router.post('/pay', async (req, res) => {
   }
 });
 
-/// POST /api/receive - register an agent as a payment receiver in QuatripeRegistry.
+/// POST /api/receive - register an agent as a payment receiver in QorbitpayRegistry.
 /// Supports custodial onboarding: the caller (our relayer wallet) registers `agent`'s
 /// address and service endpoint; `agent` doesn't need to sign anything itself.
 router.post('/receive', async (req, res) => {
