@@ -42,5 +42,26 @@ function normalizePayment(raw) {
   };
 }
 
-export { normalizePayment };
+// The registry has no "name" field - agents register a serviceEndpoint URL instead. Demo
+// agents use hostnames like "translation-agent.demo", so the first label of the hostname
+// reads as a usable display name; falls back to null (caller shows the short address).
+function agentLabel(agent) {
+  if (!agent?.serviceEndpoint) return null;
+  try {
+    return new URL(agent.serviceEndpoint).hostname.split('.')[0];
+  } catch {
+    return null;
+  }
+}
+
+function buildAgentLabels(agents = []) {
+  const map = {};
+  for (const agent of agents) {
+    const label = agentLabel(agent);
+    if (label && agent.address) map[agent.address.toLowerCase()] = label;
+  }
+  return map;
+}
+
+export { normalizePayment, buildAgentLabels };
 export default api;
