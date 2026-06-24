@@ -10,7 +10,7 @@ const DEFAULT_PROVIDERS = [
 ];
 
 const inputClass =
-  'w-full rounded-md border border-border bg-surface-2 px-2 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan/50';
+  'w-full rounded-md border border-border bg-surface-2 px-2 py-1.5 text-xs font-mono text-ink focus:outline-none focus:border-ink';
 
 function RouterPage() {
   const [providers, setProviders] = useState(DEFAULT_PROVIDERS);
@@ -55,8 +55,8 @@ function RouterPage() {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Router</h1>
-          <p className="text-slate-500 text-sm mt-1">QAOA picks the optimal agent service provider.</p>
+          <h1 className="font-display text-2xl font-semibold">Router</h1>
+          <p className="text-neutral-500 text-sm mt-1">QAOA picks the optimal agent service provider.</p>
         </div>
         <QuantumBadge label="QAOA" active title="quantum approximate optimization" />
       </div>
@@ -64,7 +64,7 @@ function RouterPage() {
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-surface p-5">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-xs text-slate-500">
+            <tr className="text-xs text-neutral-500">
               <th className="pb-2">id</th>
               <th className="pb-2">price</th>
               <th className="pb-2">latency (ms)</th>
@@ -104,7 +104,7 @@ function RouterPage() {
                   />
                 </td>
                 <td className="py-1">
-                  <button type="button" onClick={() => removeProvider(idx)} className="text-slate-600 hover:text-red-400 text-xs">
+                  <button type="button" onClick={() => removeProvider(idx)} className="text-neutral-400 hover:text-red-600 text-xs">
                     remove
                   </button>
                 </td>
@@ -113,47 +113,47 @@ function RouterPage() {
           </tbody>
         </table>
 
-        <button type="button" onClick={addProvider} className="text-xs text-cyan hover:underline">
+        <button type="button" onClick={addProvider} className="text-xs text-ink hover:underline">
           + add provider
         </button>
 
         <button
           type="submit"
           disabled={loading || providers.length === 0}
-          className="w-full rounded-md bg-gold text-black font-medium text-sm py-2.5 hover:brightness-110 disabled:opacity-50"
+          className="w-full rounded-md bg-ink text-white font-medium text-sm py-2.5 hover:opacity-85 disabled:opacity-50"
         >
           {loading ? 'Optimizing...' : 'Find optimal route'}
         </button>
       </form>
 
       {error && (
-        <div className="rounded-lg border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
       {result && (
         <div className="rounded-lg border border-border bg-surface p-5 space-y-3 font-mono text-sm">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">optimal_route</span>
-            <span className="text-gold text-lg">{result.optimal_route}</span>
+            <span className="text-neutral-500">optimal_route</span>
+            <span className="text-ink font-semibold text-lg">{result.optimal_route}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">quantum_cost</span>
+            <span className="text-neutral-500">quantum_cost</span>
             <span>{result.quantum_cost}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">classical_cost</span>
+            <span className="text-neutral-500">classical_cost</span>
             <span>{result.classical_cost}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">savings_pct</span>
-            <span className="text-cyan">{result.savings_pct}%</span>
+            <span className="text-neutral-500">savings_pct</span>
+            <span className="text-ink">{result.savings_pct}%</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">selection_confidence</span>
+            <span className="text-neutral-500">selection_confidence</span>
             <span>{result.selection_confidence}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500">matched_classical_optimum</span>
+            <span className="text-neutral-500">matched_classical_optimum</span>
             <span>{String(result.matched_classical_optimum)}</span>
           </div>
         </div>

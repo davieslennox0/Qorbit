@@ -6,6 +6,7 @@ import paymentsRouter from './routes/payments.js';
 import quantumRouter from './routes/quantum.js';
 import wellKnownRouter from './routes/wellKnown.js';
 import { warmPool } from './services/qrng.js';
+import { startActivityListener } from './services/chainActivityListener.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,4 +26,5 @@ app.use('/.well-known', wellKnownRouter);
 app.listen(PORT, () => {
   console.log(`Qorbitpay backend listening on port ${PORT}`);
   warmPool();
+  startActivityListener();
 });

@@ -29,8 +29,8 @@ function QuantumBadge({ label, active, title }) {
       title={title}
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-mono font-medium tracking-wide transition-colors ${
         active
-          ? 'border-cyan/40 bg-cyan/10 text-cyan'
-          : 'border-border bg-surface-2 text-slate-600'
+          ? 'border-ink bg-ink text-white'
+          : 'border-border bg-surface-2 text-neutral-400'
       }`}
     >
       {label}

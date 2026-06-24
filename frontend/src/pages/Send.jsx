@@ -7,14 +7,14 @@ const DEFAULT_FRAUD = { amount_zscore: 0, agent_age_days: 365, tx_frequency: 1, 
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="block text-xs text-slate-500 mb-1">{label}</span>
+      <span className="block text-xs text-neutral-500 mb-1">{label}</span>
       {children}
     </label>
   );
 }
 
 const inputClass =
-  'w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-cyan/50';
+  'w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm font-mono text-ink focus:outline-none focus:border-ink';
 
 function Send() {
   const [to, setTo] = useState('');
@@ -46,8 +46,8 @@ function Send() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Send</h1>
-        <p className="text-slate-500 text-sm mt-1">Settles via Qorbitpay's router contract on Arc, with all 4 quantum layers.</p>
+        <h1 className="font-display text-2xl font-semibold">Send</h1>
+        <p className="text-neutral-500 text-sm mt-1">Settles via Qorbitpay's router contract on Arc, with all 4 quantum layers.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-surface p-5">
@@ -72,7 +72,7 @@ function Send() {
         <button
           type="button"
           onClick={() => setShowFraud((v) => !v)}
-          className="text-xs text-cyan hover:underline"
+          className="text-xs text-ink hover:underline"
         >
           {showFraud ? 'hide' : 'show'} fraud signal overrides (VQC)
         </button>
@@ -96,19 +96,19 @@ function Send() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-gold text-black font-medium text-sm py-2.5 hover:brightness-110 disabled:opacity-50"
+          className="w-full rounded-md bg-ink text-white font-medium text-sm py-2.5 hover:opacity-85 disabled:opacity-50"
         >
           {loading ? 'Sending...' : 'Send payment'}
         </button>
       </form>
 
       {error && (
-        <div className="rounded-lg border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
       {result && (
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Result</h2>
+          <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wide">Result</h2>
           <TransactionCard payment={normalizePayment(result)} />
         </div>
       )}

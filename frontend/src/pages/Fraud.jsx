@@ -32,14 +32,14 @@ function Fraud() {
   }
 
   const score = result?.fraud_score ?? 0;
-  const scoreColor = score >= 0.7 ? '#f87171' : score >= 0.4 ? '#f5a623' : '#34d399';
+  const scoreColor = score >= 0.7 ? '#dc2626' : score >= 0.4 ? '#d97706' : '#16a34a';
 
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Fraud</h1>
-          <p className="text-slate-500 text-sm mt-1">VQC fraud scoring playground.</p>
+          <h1 className="font-display text-2xl font-semibold">Fraud</h1>
+          <p className="text-neutral-500 text-sm mt-1">VQC fraud scoring playground.</p>
         </div>
         <QuantumBadge label="VQC" active title="variational quantum circuit" />
       </div>
@@ -47,9 +47,9 @@ function Fraud() {
       <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-border bg-surface p-5">
         {SLIDERS.map((s) => (
           <div key={s.key}>
-            <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <div className="flex justify-between text-xs text-neutral-500 mb-1">
               <span>{s.label}</span>
-              <span className="font-mono text-slate-300">{signals[s.key]}</span>
+              <span className="font-mono text-neutral-700">{signals[s.key]}</span>
             </div>
             <input
               type="range"
@@ -58,7 +58,7 @@ function Fraud() {
               step={s.step}
               value={signals[s.key]}
               onChange={(e) => setSignals((sig) => ({ ...sig, [s.key]: Number(e.target.value) }))}
-              className="w-full accent-gold"
+              className="w-full accent-ink"
             />
           </div>
         ))}
@@ -66,20 +66,20 @@ function Fraud() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-gold text-black font-medium text-sm py-2.5 hover:brightness-110 disabled:opacity-50"
+          className="w-full rounded-md bg-ink text-white font-medium text-sm py-2.5 hover:opacity-85 disabled:opacity-50"
         >
           {loading ? 'Scoring...' : 'Run fraud check'}
         </button>
       </form>
 
       {error && (
-        <div className="rounded-lg border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
       {result && (
         <div className="rounded-lg border border-border bg-surface p-5 space-y-4">
           <div>
-            <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <div className="flex justify-between text-xs text-neutral-500 mb-1">
               <span>fraud_score</span>
               <span className="font-mono" style={{ color: scoreColor }}>
                 {result.fraud_score}
@@ -94,22 +94,22 @@ function Fraud() {
           </div>
 
           <div className="flex items-center justify-between font-mono text-sm">
-            <span className="text-slate-500">flagged</span>
-            <span className={result.flagged ? 'text-red-400' : 'text-emerald-400'}>{String(result.flagged)}</span>
+            <span className="text-neutral-500">flagged</span>
+            <span className={result.flagged ? 'text-red-600' : 'text-emerald-600'}>{String(result.flagged)}</span>
           </div>
           <div className="flex items-center justify-between font-mono text-sm">
-            <span className="text-slate-500">confidence</span>
+            <span className="text-neutral-500">confidence</span>
             <span>{result.confidence}</span>
           </div>
           <div className="flex items-center justify-between font-mono text-sm">
-            <span className="text-slate-500">qubits</span>
+            <span className="text-neutral-500">qubits</span>
             <span>{result.qubits}</span>
           </div>
           <div>
-            <div className="text-xs text-slate-500 mb-1">z_expectations</div>
+            <div className="text-xs text-neutral-500 mb-1">z_expectations</div>
             <div className="flex gap-2 font-mono text-xs">
               {result.z_expectations?.map((z, i) => (
-                <span key={i} className="rounded bg-surface-2 px-2 py-1 text-slate-300">
+                <span key={i} className="rounded bg-surface-2 px-2 py-1 text-neutral-700">
                   q{i}: {z.toFixed(3)}
                 </span>
               ))}

@@ -18,18 +18,18 @@ function timeAgo(timestamp) {
 /// payment: normalized shape from src/api.js's normalizePayment().
 function TransactionCard({ payment }) {
   const statusColor =
-    payment.status === 'confirmed' ? 'text-emerald-400' : payment.status === 'failed' ? 'text-red-400' : 'text-slate-400';
+    payment.status === 'confirmed' ? 'text-emerald-600' : payment.status === 'failed' ? 'text-red-600' : 'text-neutral-500';
 
   return (
     <div className="rounded-lg border border-border bg-surface px-4 py-3 flex items-center justify-between gap-4">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 font-mono text-sm">
-          <span className="text-slate-300">{shortAddr(payment.from)}</span>
-          <span className="text-slate-600">&rarr;</span>
-          <span className="text-slate-300">{shortAddr(payment.to)}</span>
-          <span className="text-gold ml-2">{payment.amount} USDC</span>
+          <span className="text-neutral-700">{shortAddr(payment.from)}</span>
+          <span className="text-neutral-400">&rarr;</span>
+          <span className="text-neutral-700">{shortAddr(payment.to)}</span>
+          <span className="text-ink font-semibold ml-2">{payment.amount} USDC</span>
         </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
+        <div className="mt-1 flex items-center gap-3 text-xs text-neutral-500">
           <span className={statusColor}>{payment.status}</span>
           {payment.memo && <span className="truncate">memo: {payment.memo}</span>}
           {payment.timestamp && <span>{timeAgo(payment.timestamp)}</span>}
@@ -38,7 +38,7 @@ function TransactionCard({ payment }) {
               href={payment.explorerUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-cyan hover:underline"
+              className="text-ink hover:underline"
             >
               explorer ↗
             </a>

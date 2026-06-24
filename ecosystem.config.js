@@ -25,5 +25,12 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
     },
+    {
+      name: 'qorbitpay-activity-sim',
+      cwd: './backend',
+      script: 'scripts/simulate-activity.js',
+      autorestart: true,
+      max_restarts: 10,
+    },
   ],
 };

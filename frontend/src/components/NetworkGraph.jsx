@@ -112,9 +112,9 @@ function NetworkGraph({ agents = [], payments = [] }) {
               y1={sy}
               x2={tx}
               y2={ty}
-              stroke={isPulsing ? '#00e5ff' : '#1d2535'}
+              stroke={isPulsing ? '#111111' : '#d4d4d4'}
               strokeWidth={isPulsing ? 2.5 : 1}
-              opacity={isPulsing ? 0.9 : 0.6}
+              opacity={isPulsing ? 0.9 : 0.7}
               style={{ transition: 'stroke 0.3s, stroke-width 0.3s, opacity 0.3s' }}
             />
           );
@@ -127,8 +127,8 @@ function NetworkGraph({ agents = [], payments = [] }) {
             <g key={n.id} transform={`translate(${n.x ?? WIDTH / 2}, ${n.y ?? HEIGHT / 2})`}>
               <circle
                 r={r}
-                fill={n.isAgent ? 'rgba(245,166,35,0.15)' : 'rgba(148,163,184,0.1)'}
-                stroke={n.isAgent ? '#f5a623' : '#475569'}
+                fill={n.isAgent ? 'rgba(17,17,17,0.06)' : 'rgba(17,17,17,0.02)'}
+                stroke={n.isAgent ? '#111111' : '#a3a3a3'}
                 strokeWidth={1.5}
               />
               <text
@@ -136,7 +136,7 @@ function NetworkGraph({ agents = [], payments = [] }) {
                 textAnchor="middle"
                 className="font-mono"
                 fontSize="10"
-                fill="#94a3b8"
+                fill="#737373"
               >
                 {n.label}
               </text>
