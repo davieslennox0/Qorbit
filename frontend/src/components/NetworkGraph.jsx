@@ -87,6 +87,16 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
     });
 
     const collideR = (d) => (d.isAgent ? AGENT_R + 10 : 18);
+    const PAD = AGENT_R + 14;
+
+    function boundNodes() {
+      for (const n of simulationRef.current.nodes()) {
+        const r = n.isAgent ? AGENT_R : 8;
+        const pad = r + 14;
+        n.x = Math.max(pad, Math.min(WIDTH - pad, n.x));
+        n.y = Math.max(pad, Math.min(HEIGHT - pad, n.y));
+      }
+    }
 
     if (!simulationRef.current) {
       simulationRef.current = forceSimulation(merged)
@@ -95,6 +105,7 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
         .force('center', forceCenter(WIDTH / 2, HEIGHT / 2))
         .force('collide', forceCollide(collideR))
         .on('tick', () => {
+          boundNodes();
           setTick({
             nodes: simulationRef.current.nodes().map((n) => ({ ...n })),
             links: simulationRef.current.force('link').links().map((l) => ({ ...l })),
@@ -106,6 +117,7 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
       simulationRef.current.force('collide', forceCollide(collideR));
       simulationRef.current.alpha(0.5).restart();
     }
+    void PAD;
 
     merged.forEach((n) => nodesMapRef.current.set(n.id, n));
     return () => {};
