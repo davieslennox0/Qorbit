@@ -39,7 +39,7 @@ function StatBlock({ value, label }) {
 }
 
 function Landing() {
-  const [stats, setStats] = useState({ agents: null, payments: null });
+  const [stats, setStats] = useState({ agents: null, payments: null, volume: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +47,8 @@ function Landing() {
       try {
         const [a, p] = await Promise.all([api.agents(0, 1), api.recentPayments(200)]);
         if (cancelled) return;
-        setStats({ agents: a.total, payments: p.payments.length });
+        const volume = p.payments.reduce((sum, pmt) => sum + Number(pmt.amount || 0), 0);
+        setStats({ agents: a.total, payments: p.payments.length, volume });
       } catch {
         // landing page works fine with no live numbers if the API is briefly unreachable
       }
@@ -116,9 +117,13 @@ function Landing() {
         </section>
 
         <section className="border-t border-border bg-surface">
-          <div className="max-w-6xl mx-auto px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="max-w-6xl mx-auto px-8 py-10 grid grid-cols-2 md:grid-cols-5 gap-8">
             <StatBlock value={stats.agents ?? '—'} label="Agents registered" />
             <StatBlock value={stats.payments ?? '—'} label="Payments settled" />
+            <StatBlock
+              value={stats.volume != null ? `${stats.volume.toFixed(2)} USDC` : '—'}
+              label="Total volume processed"
+            />
             <StatBlock value="4" label="Quantum layers / payment" />
             <StatBlock value="<2s" label="Median settlement" />
           </div>

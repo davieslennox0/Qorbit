@@ -133,7 +133,9 @@ function TransactionRow({ tx, address }) {
   );
 }
 
-function PlatformGate({ address, feature, feeLabel, children }) {
+const FREE_TX_LIMIT = 5000;
+
+function PlatformGate({ address, feature, feeLabel, txCount = 0, children }) {
   const [active, setActive] = useState(null); // null = loading
   const [subscribing, setSubscribing] = useState(false);
   const [error, setError] = useState(null);
@@ -181,6 +183,32 @@ function PlatformGate({ address, feature, feeLabel, children }) {
     }
   }
 
+  // Free tier: first 5 000 transactions included at no charge
+  if (txCount < FREE_TX_LIMIT) {
+    const pct = Math.min(100, (txCount / FREE_TX_LIMIT) * 100);
+    const remaining = FREE_TX_LIMIT - txCount;
+    return (
+      <div>
+        <div className="rounded-lg border border-border bg-surface px-5 py-3 mb-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="text-xs text-neutral-500">
+            Free tier —{' '}
+            <span className="font-medium text-neutral-700">
+              {txCount.toLocaleString()} / {FREE_TX_LIMIT.toLocaleString()}
+            </span>{' '}
+            transactions used &middot; <span className="text-emerald-600">{remaining.toLocaleString()} remaining free</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-32 h-1.5 rounded-full bg-surface-2 overflow-hidden">
+              <div className="h-full bg-ink rounded-full transition-all" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-xs text-neutral-400">${FEES.billingMonthly}/mo after</span>
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+  }
+
   if (active === null) {
     return <div className="py-8 text-center text-sm text-neutral-400">Checking subscription…</div>;
   }
@@ -189,9 +217,10 @@ function PlatformGate({ address, feature, feeLabel, children }) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <div className="text-center">
-          <div className="text-sm font-medium text-neutral-700 mb-1">Platform subscription required</div>
-          <div className="text-xs text-neutral-500">
-            {feeLabel} — {FEES.billingMonthly} USDC / month, paid from your wallet
+          <div className="text-sm font-medium text-neutral-700 mb-1">Free tier limit reached</div>
+          <div className="text-xs text-neutral-500 max-w-xs">
+            You've used all {FREE_TX_LIMIT.toLocaleString()} free transactions.
+            Subscribe to continue using {feeLabel} — ${FEES.billingMonthly} / month, paid from your wallet.
           </div>
         </div>
         <button
@@ -598,6 +627,7 @@ function AgentDashboard() {
   const [escrows, setEscrows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [txDisplayLimit, setTxDisplayLimit] = useState(10);
 
   useEffect(() => {
     if (!window.ethereum) return;
@@ -750,6 +780,21 @@ function AgentDashboard() {
             </div>
           )}
 
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-neutral-400">
+              {txs.length > 0 ? `showing ${Math.min(txs.length, txDisplayLimit)} of ${txs.length}` : ''}
+            </span>
+            <select
+              value={txDisplayLimit}
+              onChange={(e) => setTxDisplayLimit(Number(e.target.value))}
+              className="text-xs border border-border rounded px-2 py-1 bg-surface text-neutral-600 focus:outline-none focus:border-ink"
+            >
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
           <div className="rounded-lg border border-border bg-surface divide-y divide-border">
             {loading && txs.length === 0 && (
               <div className="px-4 py-8 text-sm text-neutral-400 text-center">Loading…</div>
@@ -764,7 +809,7 @@ await q.pay({ to: '0xAgent', amount: 0.01 })`}
                 </pre>
               </div>
             )}
-            {txs.map((tx) => (
+            {txs.slice(0, txDisplayLimit).map((tx) => (
               <TransactionRow key={tx.txHash} tx={tx} address={address} />
             ))}
           </div>
@@ -772,13 +817,13 @@ await q.pay({ to: '0xAgent', amount: 0.01 })`}
       )}
 
       {tab === 'billing' && (
-        <PlatformGate address={address} feature="billing" feeLabel="Access Billing">
+        <PlatformGate address={address} feature="billing" feeLabel="Billing" txCount={txs.length}>
           <BillingTab address={address} />
         </PlatformGate>
       )}
 
       {tab === 'treasury' && (
-        <PlatformGate address={address} feature="treasury" feeLabel="Access Treasury">
+        <PlatformGate address={address} feature="treasury" feeLabel="Treasury" txCount={txs.length}>
           <TreasuryTab address={address} />
         </PlatformGate>
       )}
