@@ -6,6 +6,8 @@ entirely.
 
 Any agent. Any framework. Three lines of code.
 
+**[qorbitpay.xyz](https://qorbitpay.xyz)** — [npm: qorbitpay-sdk](https://www.npmjs.com/package/qorbitpay-sdk) — [GitHub](https://github.com/davieslennox0/Qorbit)
+
 ```js
 import { Qorbitpay } from 'qorbitpay-sdk'
 
@@ -22,7 +24,7 @@ quantum-optimized routing, and post-quantum signatures.
 
 - `backend/` — Node.js + Express API (port 3001): payments, agent directory, x402, the 4 quantum layers
 - `frontend/` — React + Tailwind dashboard (Vite)
-- `sdk/` — `qorbitpay-sdk`, the agent-facing payments client (npm package, not yet published)
+- `sdk/` — [`qorbitpay-sdk`](https://www.npmjs.com/package/qorbitpay-sdk), the agent-facing payments client (published on npm)
 - `quantum-services/` — Python: VQC fraud detection + QAOA routing (Qiskit Aer), spawned per-request by the backend
 - `contracts/` — Solidity (Foundry): QorbitpayRouter, QorbitpayRegistry, DilithiumVerifier
 
