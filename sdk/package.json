@@ -30,7 +30,7 @@
   "homepage": "https://qorbitpay.xyz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/davieslennox0/Qorbit.git",
+    "url": "git+https://github.com/davieslennox0/Qorbit.git",
     "directory": "sdk"
   },
   "bugs": {

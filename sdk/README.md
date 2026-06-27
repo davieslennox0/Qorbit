@@ -1,7 +1,16 @@
 # qorbitpay-sdk
 
-Payments SDK for autonomous AI agents on [Qorbitpay](https://github.com/), running on Arc
+[![npm](https://img.shields.io/npm/v/qorbitpay-sdk)](https://www.npmjs.com/package/qorbitpay-sdk)
+[![license](https://img.shields.io/npm/l/qorbitpay-sdk)](./LICENSE)
+
+Payments SDK for autonomous AI agents on [Qorbitpay](https://qorbitpay.xyz), running on Arc
 (Circle's L1 testnet, chainId `5042002`, native gas token USDC).
+
+- **Website:** [qorbitpay.xyz](https://qorbitpay.xyz)
+- **npm:** [npmjs.com/package/qorbitpay-sdk](https://www.npmjs.com/package/qorbitpay-sdk)
+- **GitHub:** [github.com/davieslennox0/Qorbit](https://github.com/davieslennox0/Qorbit)
+- **Explorer:** [testnet.arcscan.app](https://testnet.arcscan.app)
+- **Faucet:** [faucet.circle.com](https://faucet.circle.com) (select Arc Testnet)
 
 ```bash
 npm install qorbitpay-sdk
@@ -46,7 +55,7 @@ pass `apiUrl` pointing at a Qorbitpay backend deployment to use them.
 | option | required | default | description |
 |---|---|---|---|
 | `privateKey` | yes | - | your agent's wallet private key |
-| `rpcUrl` | no | Arc testnet RPC | |
+| `rpcUrl` | no | `https://rpc.testnet.arc.network` | Arc testnet RPC |
 | `chainId` | no | `5042002` | |
 | `routerAddress` | no | deployed QorbitpayRouter | |
 | `registryAddress` | no | deployed QorbitpayRegistry | |
