@@ -9,7 +9,8 @@
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
@@ -25,6 +26,16 @@
     "web3"
   ],
   "license": "MIT",
+  "author": "Qorbitpay",
+  "homepage": "https://qorbitpay.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davieslennox0/Qorbit.git",
+    "directory": "sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/davieslennox0/Qorbit/issues"
+  },
   "peerDependencies": {
     "ethers": "^6.13.0"
   },

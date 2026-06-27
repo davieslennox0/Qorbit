@@ -200,10 +200,10 @@ router.post('/pay', async (req, res) => {
 
 /// POST /api/receive - register an agent as a payment receiver in QorbitpayRegistry.
 /// Supports custodial onboarding: the caller (our relayer wallet) registers `agent`'s
-/// address and service endpoint; `agent` doesn't need to sign anything itself.
+/// ERC-8004 AgentIdentity; `agent` doesn't need to sign anything itself.
 router.post('/receive', async (req, res) => {
   try {
-    const { agent, serviceEndpoint } = req.body || {};
+    const { agent, serviceEndpoint, name = 'Agent', version = '1.0.0' } = req.body || {};
     if (!agent || !ethers.isAddress(agent)) {
       return res.status(400).json({ error: 'agent must be a valid address' });
     }
@@ -211,15 +211,35 @@ router.post('/receive', async (req, res) => {
       return res.status(400).json({ error: 'serviceEndpoint is required' });
     }
 
+    const identity = {
+      owner: agent,
+      name,
+      version,
+      serviceEndpoint,
+      capabilityHash: ethers.ZeroHash,
+      registeredAt: 0,
+      active: true,
+    };
+
     const wallet = getWallet();
     const registry = registryContract(wallet);
-    const tx = await withWalletLock((txNonce) => registry.registerAgent(agent, serviceEndpoint, { nonce: txNonce }));
+    const tx = await withWalletLock((txNonce) => registry.registerAgent(identity, { nonce: txNonce }));
     const receipt = await tx.wait();
+
+    let agentId = null;
+    for (const log of receipt.logs) {
+      try {
+        const parsed = registry.interface.parseLog({ topics: log.topics, data: log.data });
+        if (parsed?.name === 'AgentRegistered') { agentId = parsed.args.agentId; break; }
+      } catch { /* ignore */ }
+    }
 
     res.json({
       tx_hash: tx.hash,
       arc_explorer_url: `${EXPLORER}/tx/${tx.hash}`,
       agent,
+      agentId,
+      erc8004: true,
       serviceEndpoint,
       status: receipt.status === 1 ? 'confirmed' : 'failed',
       block_number: receipt.blockNumber,
@@ -230,7 +250,7 @@ router.post('/receive', async (req, res) => {
   }
 });
 
-/// GET /api/agents - paginated agent discovery registry.
+/// GET /api/agents - paginated ERC-8004 agent discovery registry.
 router.get('/agents', async (req, res) => {
   try {
     const offset = Number(req.query.offset || 0);
@@ -238,18 +258,24 @@ router.get('/agents', async (req, res) => {
 
     const registry = registryContract();
     const total = await registry.agentCount();
-    const [page, addrs] = await registry.listAgents(offset, limit);
+    const [page, ids] = await registry.listAgents(offset, limit);
 
-    const agents = addrs.map((address, i) => ({
-      address,
+    const agents = ids.map((agentId, i) => ({
+      agentId,
+      erc8004: true,
       owner: page[i].owner,
+      name: page[i].name,
+      version: page[i].version,
       serviceEndpoint: page[i].serviceEndpoint,
-      reputation: Number(page[i].reputation),
+      capabilityHash: page[i].capabilityHash,
       registeredAt: Number(page[i].registeredAt),
       active: page[i].active,
+      reputation: Number(page[i].reputation),
+      trustScore: Number(page[i].trustScore),
+      quantumLayerMask: Number(page[i].quantumLayerMask),
     }));
 
-    res.json({ total: Number(total), offset, limit, agents });
+    res.json({ total: Number(total), offset, limit, erc8004: true, agents });
   } catch (err) {
     console.error('GET /api/agents failed:', err);
     res.status(500).json({ error: err.message });

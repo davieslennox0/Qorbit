@@ -6,12 +6,23 @@ const router = express.Router();
 const PQ_ATTESTATION_THRESHOLD = Number(process.env.PQ_ATTESTATION_THRESHOLD || 0.10);
 
 /// GET /.well-known/agent.json - A2A (Agent2Agent) AgentCard describing Qorbitpay's
-/// skills. `url` is derived from the actual request rather than hardcoded, so this stays
-/// correct in dev, behind a reverse proxy, or once a real domain is attached.
+/// skills, extended with ERC-8004 agent identity fields for Arc ecosystem interoperability.
+/// `url` is derived from the actual request rather than hardcoded, so this stays correct in
+/// dev, behind a reverse proxy, or once a real domain is attached.
 router.get('/agent.json', (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
   res.json({
+    // ERC-8004 identity fields
+    erc8004: true,
+    agentId: process.env.PLATFORM_AGENT_ID || null,
+    owner: process.env.PLATFORM_OWNER_ADDRESS || null,
+    serviceEndpoint: process.env.SERVICE_ENDPOINT || baseUrl,
+    capabilities: ['pay', 'receive', 'route', 'fraud-score', 'subscribe', 'treasury'],
+    quantumLayers: ['QAOA', 'VQC', 'QRNG', 'Dilithium2'],
+    payment: { protocol: 'x402', token: 'USDC', chain: 'Arc testnet' },
+
+    // A2A AgentCard standard fields
     name: 'Qorbitpay',
     description:
       'Payment infrastructure for autonomous AI agents on Arc (Circle\'s L1 testnet, ' +
@@ -20,16 +31,14 @@ router.get('/agent.json', (req, res) => {
       'detection, QAOA provider routing, and Dilithium2 (post-quantum, FIPS 204 ML-DSA-44) ' +
       'payment attestation.',
     url: `${baseUrl}/api`,
+    version: '1.0.0',
     provider: {
       organization: 'Qorbitpay',
       url: baseUrl,
     },
-    version: '0.1.0',
-    capabilities: {
-      streaming: false,
-      pushNotifications: false,
-      stateTransitionHistory: false,
-    },
+    streaming: false,
+    pushNotifications: false,
+    stateTransitionHistory: false,
     defaultInputModes: ['application/json'],
     defaultOutputModes: ['application/json'],
     securitySchemes: {
@@ -61,16 +70,16 @@ router.get('/agent.json', (req, res) => {
       {
         id: 'receive',
         name: 'Register as payee',
-        description: 'Custodial registration of an agent in the on-chain QorbitpayRegistry directory.',
-        tags: ['agents', 'directory'],
+        description: 'Custodial ERC-8004 registration of an agent in the on-chain QorbitpayRegistry directory.',
+        tags: ['agents', 'directory', 'erc8004'],
         inputModes: ['application/json'],
         outputModes: ['application/json'],
       },
       {
         id: 'agents',
         name: 'Agent directory lookup',
-        description: 'Paginated read of registered agents (service endpoint, reputation, status).',
-        tags: ['agents', 'directory'],
+        description: 'Paginated read of ERC-8004 registered agents (agentId, name, service endpoint, reputation).',
+        tags: ['agents', 'directory', 'erc8004'],
         inputModes: ['application/json'],
         outputModes: ['application/json'],
       },

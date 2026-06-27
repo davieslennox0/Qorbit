@@ -22,6 +22,20 @@ const api = {
   fraud: (body) => request('/fraud', { method: 'POST', body: JSON.stringify(body) }),
   route: (providers) => request('/route', { method: 'POST', body: JSON.stringify({ providers }) }),
   arcStatus: () => request('/arc/status'),
+  // Agent dashboard
+  agentSummary: (address) => request(`/agent/${address}/summary`),
+  agentTransactions: (address) => request(`/agent/${address}/transactions`),
+  agentEscrows: (address) => request(`/agent/${address}/escrows`),
+  // Billing
+  billingSubscribe: (body) => request('/billing/subscribe', { method: 'POST', body: JSON.stringify(body) }),
+  billingCancel: (subId) => request('/billing/cancel', { method: 'POST', body: JSON.stringify({ subId }) }),
+  billingSubscriptions: (agentAddress) => request(`/billing/subscriptions/${agentAddress}`),
+  billingSubscriptionsBy: (subscriberAddress) => request(`/billing/subscriptions-by/${subscriberAddress}`),
+  // Treasury
+  treasuryAllocate: (body) => request('/treasury/allocate', { method: 'POST', body: JSON.stringify(body) }),
+  treasurySpend: (body) => request('/treasury/spend', { method: 'POST', body: JSON.stringify(body) }),
+  treasuryRevoke: (body) => request('/treasury/revoke', { method: 'POST', body: JSON.stringify(body) }),
+  treasuryInfo: (address) => request(`/treasury/${address}`),
 };
 
 // POST /api/pay returns snake_case fields; GET /api/payments/recent returns camelCase.
@@ -42,10 +56,10 @@ function normalizePayment(raw) {
   };
 }
 
-// The registry has no "name" field - agents register a serviceEndpoint URL instead. Demo
-// agents use hostnames like "translation-agent.demo", so the first label of the hostname
-// reads as a usable display name; falls back to null (caller shows the short address).
+// ERC-8004 agents carry an explicit `name` field; fall back to the hostname of the
+// serviceEndpoint for older registrations. Falls back to null (caller shows short address).
 function agentLabel(agent) {
+  if (agent?.name && agent.name !== 'Agent') return agent.name;
   if (!agent?.serviceEndpoint) return null;
   try {
     return new URL(agent.serviceEndpoint).hostname.split('.')[0];
@@ -58,7 +72,9 @@ function buildAgentLabels(agents = []) {
   const map = {};
   for (const agent of agents) {
     const label = agentLabel(agent);
-    if (label && agent.address) map[agent.address.toLowerCase()] = label;
+    // ERC-8004 agents use `owner` as their payment address (replaces old `address` field).
+    const addr = agent.owner || agent.address;
+    if (label && addr) map[addr.toLowerCase()] = label;
   }
   return map;
 }

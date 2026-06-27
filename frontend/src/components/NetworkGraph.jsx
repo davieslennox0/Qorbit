@@ -30,9 +30,12 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
   const { nodes, links } = useMemo(() => {
     const nodeById = new Map();
     for (const agent of agents) {
-      nodeById.set(agent.address, {
-        id: agent.address,
-        label: labelFor(agent.address),
+      // ERC-8004 agents use `owner` as their payment address; fall back to `address` for
+      // pre-ERC-8004 records that may come from older snapshots.
+      const addr = agent.owner || agent.address;
+      nodeById.set(addr, {
+        id: addr,
+        label: labelFor(addr),
         reputation: agent.reputation ?? 0,
         isAgent: true,
       });
