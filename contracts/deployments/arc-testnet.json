@@ -18,10 +18,12 @@
       "routerSetRegistryTx": "0x509d14b1c57032b9b2623eb60a117d76ef26ec4392dc16d5cf2fee417406c7c0"
     },
     "QorbitpayRouter": {
-      "address": "0xCEe1f311261Ffe460ef5060F94183320e74fD703",
-      "txHash": "0x97554ef90f49413265fc68183ae683ddba57a07206c1cea8ffa2801f22d7fa19",
+      "address": "0x529D65da046EFA1240093F15cF7B6AfeaA64CFb6",
+      "txHash": "0x3882958d337a4d4e1e60f9ee7776398c9b096735966a4b2de9967bc8fd2ee44c",
+      "note": "v2 — platformFee=0.001 USDC deducted on every pay/splitPay/createEscrow; feeRecipient=deployer",
+      "previousAddress": "0xCEe1f311261Ffe460ef5060F94183320e74fD703",
       "constructorArgs": {
-        "registry": "0x3fbCdaD38f40d932A5574562BB72B9115c265093 (rewired via setRegistry after registry v3)"
+        "registry": "0x3fbCdaD38f40d932A5574562BB72B9115c265093"
       }
     },
     "QorbitBilling": {

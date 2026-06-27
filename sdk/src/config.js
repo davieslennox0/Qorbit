@@ -3,7 +3,7 @@ export const DEFAULT_NETWORK = {
   rpcUrl: 'https://rpc.testnet.arc.network',
   chainId: 5042002,
   explorer: 'https://testnet.arcscan.app',
-  routerAddress: '0xCEe1f311261Ffe460ef5060F94183320e74fD703',
+  routerAddress: '0x529D65da046EFA1240093F15cF7B6AfeaA64CFb6',
   registryAddress: '0x3fbCdaD38f40d932A5574562BB72B9115c265093',
   verifierAddress: '0xca8FbCFb990A77B130939Ec5E0B98e4324fE0c79',
   billingAddress: '0xdF87E0c0cfcA0AEa1e899073c36F29Fd865B5e97',

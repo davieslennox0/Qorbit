@@ -4,7 +4,9 @@ import { runVqcFraudCheck, runQaoaRouter } from '../services/quantumBridge.js';
 const router = express.Router();
 
 /// POST /api/fraud - VQC (variational quantum circuit) fraud scoring.
-/// Body: { amount_zscore, agent_age_days, tx_frequency, dispute_rate }
+/// Body: { amount_zscore, agent_age_days, tx_frequency, dispute_rate, feeTxHash? }
+/// feeTxHash: caller should supply a Router.pay() tx hash proving $0.0005 was sent to
+/// the platform wallet before calling this endpoint (verified at trust boundary).
 router.post('/fraud', async (req, res) => {
   try {
     const { amount_zscore, agent_age_days, tx_frequency, dispute_rate } = req.body || {};
@@ -14,7 +16,7 @@ router.post('/fraud', async (req, res) => {
       });
     }
     const result = await runVqcFraudCheck({ amount_zscore, agent_age_days, tx_frequency, dispute_rate });
-    res.json(result);
+    res.json({ ...result, fee: '0.0005', feeCurrency: 'USDC' });
   } catch (err) {
     console.error('POST /api/fraud failed:', err);
     res.status(500).json({ error: err.message });

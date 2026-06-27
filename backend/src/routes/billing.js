@@ -141,6 +141,26 @@ router.get('/subscriptions-by/:subscriberAddress', (req, res) => {
   res.json({ subscriptions: subs, subscriberAddress });
 });
 
+/// POST /api/billing/register
+/// Called after a MetaMask-signed createSubscription tx. Stores the sub in the backend index.
+/// Body: { subId, subscriber, agent, amountPerPeriod, periodSeconds }
+router.post('/register', (req, res) => {
+  const { subId, subscriber, agent, amountPerPeriod, periodSeconds } = req.body || {};
+  if (!subId || !agent) return res.status(400).json({ error: 'subId and agent required' });
+  addSub({ subId, subscriber, agent, amountPerPeriod: String(amountPerPeriod), periodSeconds: Number(periodSeconds), createdAt: Date.now() });
+  res.json({ ok: true, subId });
+});
+
+/// POST /api/billing/deregister
+/// Called after a MetaMask-signed cancelSubscription tx.
+/// Body: { subId }
+router.post('/deregister', (req, res) => {
+  const { subId } = req.body || {};
+  if (!subId) return res.status(400).json({ error: 'subId required' });
+  removeSub(subId);
+  res.json({ ok: true, subId });
+});
+
 /// POST /api/billing/process-due
 /// Called by the billing cron. Checks all tracked subscriptions and processes any that are due.
 router.post('/process-due', async (req, res) => {

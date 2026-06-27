@@ -163,6 +163,26 @@ router.post('/revoke', async (req, res) => {
   }
 });
 
+/// POST /api/treasury/register
+/// Called after a MetaMask-signed allocateBudget tx. Stores the budget in the backend index.
+/// Body: { treasury, worker, dailyCap, categoryMask, expiresAt }
+router.post('/register', (req, res) => {
+  const { treasury, worker, dailyCap, categoryMask, expiresAt } = req.body || {};
+  if (!treasury || !worker) return res.status(400).json({ error: 'treasury and worker required' });
+  addBudget({ treasury, worker, dailyCap: String(dailyCap), categoryMask: Number(categoryMask), expiresAt: Number(expiresAt), createdAt: Date.now() });
+  res.json({ ok: true });
+});
+
+/// POST /api/treasury/deregister
+/// Called after a MetaMask-signed revokeBudget tx.
+/// Body: { treasury, worker }
+router.post('/deregister', (req, res) => {
+  const { treasury, worker } = req.body || {};
+  if (!treasury || !worker) return res.status(400).json({ error: 'treasury and worker required' });
+  removeBudget(treasury, worker);
+  res.json({ ok: true });
+});
+
 /// GET /api/treasury/:address
 /// Returns budgets allocated BY this address (as treasury) and TO this address (as worker).
 /// Also queries chain for on-chain budget state for known counterparties.

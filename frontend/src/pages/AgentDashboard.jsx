@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
+import { ethers } from 'ethers';
 import api, { normalizePayment } from '../api.js';
+import { getSigner } from '../web3.js';
+import { ADDRESSES, BILLING_ABI, TREASURY_ABI, FEES, PLATFORM_WALLET } from '../frontendContracts.js';
 import { QuantumBadgeRow } from '../components/QuantumBadge.jsx';
 
 const POLL_MS = 8000;
-const CAT_LABELS = { 1: 'data', 2: 'compute', 4: 'storage', 7: 'all' };
 
 function shortAddr(addr) {
   if (!addr) return '—';
@@ -28,6 +30,17 @@ function timeAgo(timestamp) {
 function formatDate(ts) {
   if (!ts) return '—';
   return new Date(Number(ts) * 1000).toLocaleDateString();
+}
+
+function parsePeriod(period) {
+  if (typeof period === 'number') return period;
+  const str = String(period);
+  if (/^\d+$/.test(str)) return Number(str);
+  const match = str.match(/^(\d+(?:\.\d+)?)(s|m|h|d|w)$/);
+  if (!match) throw new Error(`invalid period: ${period}`);
+  const n = Number(match[1]);
+  const units = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
+  return Math.round(n * units[match[2]]);
 }
 
 function SummaryCard({ label, value, mono = false }) {
@@ -120,7 +133,83 @@ function TransactionRow({ tx, address }) {
   );
 }
 
-function BillingTab({ address, summary }) {
+function PlatformGate({ address, feature, feeLabel, children }) {
+  const [active, setActive] = useState(null); // null = loading
+  const [subscribing, setSubscribing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const check = useCallback(async () => {
+    if (!address) return;
+    try {
+      const res = await api.platformCheckSub(address, feature);
+      setActive(res.active);
+    } catch {
+      setActive(false);
+    }
+  }, [address, feature]);
+
+  useEffect(() => { check(); }, [check]);
+
+  async function handleSubscribe() {
+    setSubscribing(true);
+    setError(null);
+    try {
+      const signer = await getSigner();
+      const billing = new ethers.Contract(ADDRESSES.billing, BILLING_ABI, signer);
+      const fee = ethers.parseEther(FEES.billingMonthly); // 9.99 USDC
+      const periodSeconds = BigInt(30 * 24 * 3600);
+
+      const tx = await billing.createSubscription(PLATFORM_WALLET, fee, periodSeconds, { value: fee });
+      const receipt = await tx.wait();
+
+      let subId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = billing.interface.parseLog(log);
+          if (parsed?.name === 'SubscriptionCreated') { subId = parsed.args.subId; break; }
+        } catch {}
+      }
+
+      if (subId) {
+        await api.platformRegisterSub({ subscriber: address, feature, subId, txHash: tx.hash });
+      }
+      setActive(true);
+    } catch (err) {
+      setError(err.reason || err.message || 'Transaction failed');
+    } finally {
+      setSubscribing(false);
+    }
+  }
+
+  if (active === null) {
+    return <div className="py-8 text-center text-sm text-neutral-400">Checking subscription…</div>;
+  }
+
+  if (!active) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16">
+        <div className="text-center">
+          <div className="text-sm font-medium text-neutral-700 mb-1">Platform subscription required</div>
+          <div className="text-xs text-neutral-500">
+            {feeLabel} — {FEES.billingMonthly} USDC / month, paid from your wallet
+          </div>
+        </div>
+        <button
+          onClick={handleSubscribe}
+          disabled={subscribing}
+          className="rounded-md bg-ink text-white px-5 py-2.5 text-sm font-semibold hover:opacity-85 disabled:opacity-50 transition-opacity"
+        >
+          {subscribing ? 'Waiting for wallet…' : `Subscribe — $${FEES.billingMonthly}/month`}
+        </button>
+        {error && <div className="text-red-600 text-xs max-w-sm text-center">{error}</div>}
+      </div>
+    );
+  }
+
+  return children;
+}
+
+function BillingTab({ address }) {
   const [subs, setSubs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ agent: '', amountPerPeriod: '', period: '7d', initialBalance: '' });
@@ -147,22 +236,53 @@ function BillingTab({ address, summary }) {
     setSubmitting(true);
     setError(null);
     try {
-      await api.billingSubscribe({ ...form, subscriber: address });
+      const signer = await getSigner();
+      const billing = new ethers.Contract(ADDRESSES.billing, BILLING_ABI, signer);
+      const periodSeconds = parsePeriod(form.period);
+      const amountWei = ethers.parseEther(form.amountPerPeriod);
+      const balanceWei = form.initialBalance ? ethers.parseEther(form.initialBalance) : amountWei;
+
+      const tx = await billing.createSubscription(form.agent, amountWei, BigInt(periodSeconds), { value: balanceWei });
+      const receipt = await tx.wait();
+
+      let subId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = billing.interface.parseLog(log);
+          if (parsed?.name === 'SubscriptionCreated') { subId = parsed.args.subId; break; }
+        } catch {}
+      }
+
+      if (subId) {
+        await api.billingRegister({
+          subId,
+          subscriber: address,
+          agent: form.agent,
+          amountPerPeriod: form.amountPerPeriod,
+          periodSeconds,
+        });
+      }
+
       await load();
       setForm({ agent: '', amountPerPeriod: '', period: '7d', initialBalance: '' });
     } catch (err) {
-      setError(err.message);
+      setError(err.reason || err.message || 'Transaction failed');
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleCancel(subId) {
+    setError(null);
     try {
-      await api.billingCancel(subId);
+      const signer = await getSigner();
+      const billing = new ethers.Contract(ADDRESSES.billing, BILLING_ABI, signer);
+      const tx = await billing.cancelSubscription(subId);
+      await tx.wait();
+      await api.billingDeregister(subId);
       await load();
     } catch (err) {
-      setError(err.message);
+      setError(err.reason || err.message || 'Cancel failed');
     }
   }
 
@@ -171,6 +291,7 @@ function BillingTab({ address, summary }) {
       <div className="rounded-lg border border-border bg-surface">
         <div className="px-5 py-4 border-b border-border">
           <h3 className="font-medium text-sm">New subscription</h3>
+          <p className="text-xs text-neutral-500 mt-0.5">Signed and paid directly from your wallet</p>
         </div>
         <form onSubmit={handleSubscribe} className="px-5 py-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -221,7 +342,7 @@ function BillingTab({ address, summary }) {
             disabled={submitting}
             className="rounded-md bg-ink text-white px-4 py-2 text-sm font-medium hover:opacity-85 disabled:opacity-50"
           >
-            {submitting ? 'Creating…' : 'Create subscription'}
+            {submitting ? 'Waiting for wallet…' : 'Create subscription'}
           </button>
         </form>
       </div>
@@ -281,23 +402,49 @@ function TreasuryTab({ address }) {
     setSubmitting(true);
     setError(null);
     try {
-      const expiresAt = form.expiresAt ? Math.floor(new Date(form.expiresAt).getTime() / 1000) : '';
-      await api.treasuryAllocate({ treasury: address, ...form, expiresAt });
+      const signer = await getSigner();
+      const tc = new ethers.Contract(ADDRESSES.treasury, TREASURY_ABI, signer);
+
+      const expiresAt = Math.floor(new Date(form.expiresAt).getTime() / 1000);
+      const dailyCapWei = ethers.parseEther(form.dailyCap);
+      const mask = BigInt(form.categoryMask);
+
+      if (form.depositAmount && Number(form.depositAmount) > 0) {
+        const depositTx = await tc.deposit({ value: ethers.parseEther(form.depositAmount) });
+        await depositTx.wait();
+      }
+
+      const allocTx = await tc.allocateBudget(form.worker, dailyCapWei, mask, BigInt(expiresAt));
+      await allocTx.wait();
+
+      await api.treasuryRegister({
+        treasury: address,
+        worker: form.worker,
+        dailyCap: form.dailyCap,
+        categoryMask: form.categoryMask,
+        expiresAt,
+      });
+
       await load();
       setForm({ worker: '', dailyCap: '', categoryMask: 7, expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString().slice(0, 16), depositAmount: '' });
     } catch (err) {
-      setError(err.message);
+      setError(err.reason || err.message || 'Transaction failed');
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleRevoke(worker) {
+    setError(null);
     try {
-      await api.treasuryRevoke({ treasury: address, worker });
+      const signer = await getSigner();
+      const tc = new ethers.Contract(ADDRESSES.treasury, TREASURY_ABI, signer);
+      const tx = await tc.revokeBudget(worker);
+      await tx.wait();
+      await api.treasuryDeregister({ treasury: address, worker });
       await load();
     } catch (err) {
-      setError(err.message);
+      setError(err.reason || err.message || 'Revoke failed');
     }
   }
 
@@ -313,7 +460,10 @@ function TreasuryTab({ address }) {
     <div className="space-y-6">
       <div className="rounded-lg border border-border bg-surface">
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-medium text-sm">Allocate budget to worker</h3>
+          <div>
+            <h3 className="font-medium text-sm">Allocate budget to worker</h3>
+            <p className="text-xs text-neutral-500 mt-0.5">Signed and paid directly from your wallet</p>
+          </div>
           {data?.chainBalance != null && (
             <span className="text-xs font-mono text-neutral-500">
               treasury balance: {Number(data.chainBalance).toFixed(6)} USDC
@@ -385,7 +535,7 @@ function TreasuryTab({ address }) {
             disabled={submitting}
             className="rounded-md bg-ink text-white px-4 py-2 text-sm font-medium hover:opacity-85 disabled:opacity-50"
           >
-            {submitting ? 'Allocating…' : 'Allocate budget'}
+            {submitting ? 'Waiting for wallet…' : 'Allocate budget'}
           </button>
         </form>
       </div>
@@ -449,7 +599,6 @@ function AgentDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Listen for account changes in the connected wallet
   useEffect(() => {
     if (!window.ethereum) return;
     const onAccountsChanged = (accounts) => setAddress(accounts[0] || null);
@@ -622,8 +771,17 @@ await q.pay({ to: '0xAgent', amount: 0.01 })`}
         </div>
       )}
 
-      {tab === 'billing' && <BillingTab address={address} summary={summary} />}
-      {tab === 'treasury' && <TreasuryTab address={address} />}
+      {tab === 'billing' && (
+        <PlatformGate address={address} feature="billing" feeLabel="Access Billing">
+          <BillingTab address={address} />
+        </PlatformGate>
+      )}
+
+      {tab === 'treasury' && (
+        <PlatformGate address={address} feature="treasury" feeLabel="Access Treasury">
+          <TreasuryTab address={address} />
+        </PlatformGate>
+      )}
     </div>
   );
 }

@@ -31,11 +31,19 @@ const api = {
   billingCancel: (subId) => request('/billing/cancel', { method: 'POST', body: JSON.stringify({ subId }) }),
   billingSubscriptions: (agentAddress) => request(`/billing/subscriptions/${agentAddress}`),
   billingSubscriptionsBy: (subscriberAddress) => request(`/billing/subscriptions-by/${subscriberAddress}`),
+  billingRegister: (body) => request('/billing/register', { method: 'POST', body: JSON.stringify(body) }),
+  billingDeregister: (subId) => request('/billing/deregister', { method: 'POST', body: JSON.stringify({ subId }) }),
   // Treasury
   treasuryAllocate: (body) => request('/treasury/allocate', { method: 'POST', body: JSON.stringify(body) }),
   treasurySpend: (body) => request('/treasury/spend', { method: 'POST', body: JSON.stringify(body) }),
   treasuryRevoke: (body) => request('/treasury/revoke', { method: 'POST', body: JSON.stringify(body) }),
   treasuryInfo: (address) => request(`/treasury/${address}`),
+  treasuryRegister: (body) => request('/treasury/register', { method: 'POST', body: JSON.stringify(body) }),
+  treasuryDeregister: (body) => request('/treasury/deregister', { method: 'POST', body: JSON.stringify(body) }),
+  // Platform subscriptions
+  platformCheckSub: (subscriber, feature) => request(`/platform/sub/${subscriber}/${feature}`),
+  platformRegisterSub: (body) => request('/platform/register-sub', { method: 'POST', body: JSON.stringify(body) }),
+  platformCancelSub: (body) => request('/platform/cancel-sub', { method: 'POST', body: JSON.stringify(body) }),
 };
 
 // POST /api/pay returns snake_case fields; GET /api/payments/recent returns camelCase.

@@ -1,6 +1,6 @@
 {
   "name": "qorbitpay-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SDK for autonomous AI agents to send and receive payments on Qorbitpay (Arc testnet)",
   "type": "module",
   "main": "src/index.js",

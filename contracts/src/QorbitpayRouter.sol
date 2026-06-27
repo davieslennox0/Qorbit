@@ -7,6 +7,8 @@ import {QorbitpayRegistry} from "./QorbitpayRegistry.sol";
 /// @notice Routes native-token (USDC gas token on Arc) payments between agents:
 /// direct payments, multi-recipient splits, and escrow with release/refund.
 /// Also anchors SHA-256 batch commitments of QRNG-derived payment nonces on-chain.
+/// A flat platformFee (default 0.001 USDC) is deducted on every payment and sent
+/// to feeRecipient (the Qorbitpay protocol treasury).
 contract QorbitpayRouter {
     struct Escrow {
         address payer;
@@ -19,8 +21,11 @@ contract QorbitpayRouter {
     }
 
     address public admin;
-    address public anchor; // backend service address allowed to anchor nonce batches
+    address public anchor;
+    address public feeRecipient;
     QorbitpayRegistry public registry;
+
+    uint256 public platformFee = 0.001 ether; // 0.001 USDC per transaction
 
     uint256 public escrowCount;
     mapping(uint256 => Escrow) public escrows;
@@ -33,11 +38,14 @@ contract QorbitpayRouter {
     event BatchAnchored(bytes32 indexed merkleRoot, uint256 batchSize, uint256 timestamp);
     event AnchorUpdated(address indexed anchor);
     event RegistryUpdated(address indexed registry);
+    event PlatformFeeUpdated(uint256 fee);
+    event FeeRecipientUpdated(address recipient);
 
     error NotAdmin();
     error NotAnchor();
     error LengthMismatch();
     error AmountMismatch();
+    error InsufficientForFee();
     error EscrowNotFound();
     error EscrowAlreadySettled();
     error NotEscrowParty();
@@ -57,6 +65,7 @@ contract QorbitpayRouter {
     constructor(address registryAddress) {
         admin = msg.sender;
         anchor = msg.sender;
+        feeRecipient = msg.sender;
         registry = QorbitpayRegistry(registryAddress);
     }
 
@@ -70,43 +79,58 @@ contract QorbitpayRouter {
         emit RegistryUpdated(registryAddress);
     }
 
-    /// @notice Direct payment from caller to `to`. `memoHash` ties the payment to an
-    /// off-chain record (e.g. hash of the x402 payment payload or quantum nonce).
-    function pay(address to, bytes32 memoHash) external payable {
-        _send(to, msg.value);
-        emit PaymentSent(msg.sender, to, msg.value, memoHash);
+    function setPlatformFee(uint256 fee) external onlyAdmin {
+        platformFee = fee;
+        emit PlatformFeeUpdated(fee);
     }
 
-    /// @notice Multi-hop / multi-recipient split payment. Sum of amounts must equal msg.value.
+    function setFeeRecipient(address recipient) external onlyAdmin {
+        feeRecipient = recipient;
+        emit FeeRecipientUpdated(recipient);
+    }
+
+    /// @notice Direct payment. msg.value must exceed platformFee; net amount goes to `to`.
+    function pay(address to, bytes32 memoHash) external payable {
+        if (msg.value <= platformFee) revert InsufficientForFee();
+        _send(feeRecipient, platformFee);
+        uint256 net = msg.value - platformFee;
+        _send(to, net);
+        emit PaymentSent(msg.sender, to, net, memoHash);
+    }
+
+    /// @notice Multi-recipient split. msg.value must equal sum(amounts) + platformFee.
     function splitPay(address[] calldata to, uint256[] calldata amounts, bytes32 memoHash) external payable {
         if (to.length != amounts.length) revert LengthMismatch();
         uint256 total;
         for (uint256 i = 0; i < amounts.length; i++) {
             total += amounts[i];
         }
-        if (total != msg.value) revert AmountMismatch();
+        if (msg.value != total + platformFee) revert AmountMismatch();
+        _send(feeRecipient, platformFee);
         for (uint256 i = 0; i < to.length; i++) {
             _send(to[i], amounts[i]);
         }
         emit SplitPaymentSent(msg.sender, to, amounts, memoHash);
     }
 
+    /// @notice Escrow creation. msg.value must exceed platformFee; net is held in escrow.
     function createEscrow(address payee, uint64 timeoutSeconds) external payable returns (uint256 id) {
+        if (msg.value <= platformFee) revert InsufficientForFee();
+        _send(feeRecipient, platformFee);
+        uint256 net = msg.value - platformFee;
         id = escrowCount++;
         escrows[id] = Escrow({
             payer: msg.sender,
             payee: payee,
-            amount: msg.value,
+            amount: net,
             createdAt: uint64(block.timestamp),
             timeoutSeconds: timeoutSeconds,
             released: false,
             refunded: false
         });
-        emit EscrowCreated(id, msg.sender, payee, msg.value, timeoutSeconds);
+        emit EscrowCreated(id, msg.sender, payee, net, timeoutSeconds);
     }
 
-    /// @notice Release escrowed funds to the payee. Callable by the payer (early release)
-    /// or the admin (arbiter). Bumps payee reputation if a registry is set.
     function releaseEscrow(uint256 id) external {
         Escrow storage e = escrows[id];
         if (e.payer == address(0)) revert EscrowNotFound();
@@ -120,8 +144,6 @@ contract QorbitpayRouter {
         emit EscrowReleased(id);
     }
 
-    /// @notice Refund escrowed funds to the payer. Callable by the payer after timeout,
-    /// or the admin (arbiter) at any time.
     function refundEscrow(uint256 id) external {
         Escrow storage e = escrows[id];
         if (e.payer == address(0)) revert EscrowNotFound();
@@ -139,7 +161,6 @@ contract QorbitpayRouter {
         emit EscrowRefunded(id);
     }
 
-    /// @notice Anchor a SHA-256 Merkle root committing to a batch of QRNG payment nonces.
     function anchorBatch(bytes32 merkleRoot, uint256 batchSize) external onlyAnchor {
         emit BatchAnchored(merkleRoot, batchSize, block.timestamp);
     }

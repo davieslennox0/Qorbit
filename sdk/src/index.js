@@ -58,7 +58,10 @@ class Qorbitpay {
     if (!amount || Number(amount) <= 0) throw new Error('pay() requires a positive `amount`');
 
     const memoHash = memo ? ethers.keccak256(ethers.toUtf8Bytes(memo)) : ethers.ZeroHash;
-    const value = ethers.parseEther(String(amount));
+    // Router deducts 0.001 USDC platformFee and forwards the remainder to `to`.
+    // msg.value must be amount + fee so the recipient gets exactly `amount`.
+    const PLATFORM_FEE = ethers.parseEther('0.001');
+    const value = ethers.parseEther(String(amount)) + PLATFORM_FEE;
 
     const tx = await this._withNonceLock((nonce) => this.router.pay(to, memoHash, { value, nonce }));
     const receipt = await tx.wait();

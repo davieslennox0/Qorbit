@@ -62,8 +62,9 @@ pass `apiUrl` pointing at a Qorbitpay backend deployment to use them.
 | `apiUrl` | no | `null` | base URL of a Qorbitpay backend, required for `checkFraud`/`findRoute` |
 
 ### `await q.pay({ to, amount, memo })`
-Sends `amount` (native token units, string or number) to `to`. `memo` is hashed
-(keccak256) on-chain. Returns `{ txHash, status, blockNumber, explorerUrl, ... }`.
+Sends `amount` USDC to `to`. A `0.001 USDC` platform fee is automatically added on top
+(the router deducts it; `to` receives exactly `amount`). `memo` is hashed (keccak256)
+on-chain. Returns `{ txHash, status, blockNumber, explorerUrl, ... }`.
 
 ### `q.receive({ onPayment })`
 Subscribes to incoming `PaymentSent` events addressed to your agent. Returns an
