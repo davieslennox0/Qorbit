@@ -4,10 +4,18 @@ import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } 
 const WIDTH = 900;
 const HEIGHT = 560;
 const PULSE_MS = 2600;
+const AGENT_R = 34;
 
 function shortAddr(addr) {
   if (!addr) return '?';
   return `${addr.slice(0, 6)}`;
+}
+
+function splitLabel(label = '') {
+  const words = label.split(' ');
+  if (words.length === 1) return [label, null];
+  const mid = Math.ceil(words.length / 2);
+  return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
 }
 
 /// Force-directed graph: one node per agent (sized by reputation) plus any wallet seen in
@@ -18,10 +26,10 @@ function shortAddr(addr) {
 /// the same nodes.
 function NetworkGraph({ agents = [], payments = [], labels = {} }) {
   const simulationRef = useRef(null);
-  const nodesMapRef = useRef(new Map()); // id -> persisted {x,y,vx,vy}
+  const nodesMapRef = useRef(new Map());
   const seenTxRef = useRef(new Set());
   const [tick, setTick] = useState({ nodes: [], links: [] });
-  const [pulsing, setPulsing] = useState(() => new Map()); // txHash -> link snapshot (amount, etc.)
+  const [pulsing, setPulsing] = useState(() => new Map());
 
   function labelFor(addr) {
     return labels[addr?.toLowerCase()] || shortAddr(addr);
@@ -30,8 +38,6 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
   const { nodes, links } = useMemo(() => {
     const nodeById = new Map();
     for (const agent of agents) {
-      // ERC-8004 agents use `owner` as their payment address; fall back to `address` for
-      // pre-ERC-8004 records that may come from older snapshots.
       const addr = agent.owner || agent.address;
       nodeById.set(addr, {
         id: addr,
@@ -54,7 +60,6 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
   }, [agents, payments, labels]);
 
   useEffect(() => {
-    // Detect genuinely new payments (by txHash) and pulse their edge briefly.
     const fresh = links.filter((l) => l.txHash && !seenTxRef.current.has(l.txHash));
     if (fresh.length > 0) {
       fresh.forEach((l) => seenTxRef.current.add(l.txHash));
@@ -76,18 +81,19 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
   }, [links]);
 
   useEffect(() => {
-    // Merge new node list with persisted positions so the layout doesn't jump on poll.
     const merged = nodes.map((n) => {
       const prev = nodesMapRef.current.get(n.id);
       return prev ? { ...n, x: prev.x, y: prev.y, vx: prev.vx, vy: prev.vy } : { ...n };
     });
 
+    const collideR = (d) => (d.isAgent ? AGENT_R + 10 : 18);
+
     if (!simulationRef.current) {
       simulationRef.current = forceSimulation(merged)
-        .force('link', forceLink(links).id((d) => d.id).distance(160).strength(0.25))
-        .force('charge', forceManyBody().strength(-260))
+        .force('link', forceLink(links).id((d) => d.id).distance(180).strength(0.25))
+        .force('charge', forceManyBody().strength(-320))
         .force('center', forceCenter(WIDTH / 2, HEIGHT / 2))
-        .force('collide', forceCollide((d) => 16 + Math.sqrt(d.reputation || 4)))
+        .force('collide', forceCollide(collideR))
         .on('tick', () => {
           setTick({
             nodes: simulationRef.current.nodes().map((n) => ({ ...n })),
@@ -96,12 +102,12 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
         });
     } else {
       simulationRef.current.nodes(merged);
-      simulationRef.current.force('link', forceLink(links).id((d) => d.id).distance(160).strength(0.25));
+      simulationRef.current.force('link', forceLink(links).id((d) => d.id).distance(180).strength(0.25));
+      simulationRef.current.force('collide', forceCollide(collideR));
       simulationRef.current.alpha(0.5).restart();
     }
 
     merged.forEach((n) => nodesMapRef.current.set(n.id, n));
-
     return () => {};
   }, [nodes, links]);
 
@@ -130,6 +136,7 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
         </filter>
       </defs>
 
+      {/* edges */}
       <g>
         {tick.links.map((l, i) => {
           const isPulsing = l.txHash && pulsing.has(l.txHash);
@@ -139,11 +146,9 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
           const ty = l.target?.y ?? 0;
           const mx = (sx + tx) / 2;
           const my = (sy + ty) / 2;
-          const pathId = `path-${l.txHash || i}`;
           return (
             <g key={l.txHash || i}>
               <path
-                id={pathId}
                 d={`M ${sx} ${sy} L ${tx} ${ty}`}
                 fill="none"
                 stroke={isPulsing ? '#111111' : '#d4d4d4'}
@@ -155,16 +160,9 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
               {isPulsing && (
                 <>
                   <circle r={4} fill="#111111" filter="url(#netGlow)">
-                    <animateMotion key={l.txHash} dur="1.1s" repeatCount="indefinite" path={`M ${sx} ${sy} L ${tx} ${ty}`} />
+                    <animateMotion dur="1.1s" repeatCount="indefinite" path={`M ${sx} ${sy} L ${tx} ${ty}`} />
                   </circle>
-                  <text
-                    x={mx}
-                    y={my - 8}
-                    textAnchor="middle"
-                    className="font-mono font-medium"
-                    fontSize="11"
-                    fill="#111111"
-                  >
+                  <text x={mx} y={my - 8} textAnchor="middle" fontFamily="monospace" fontSize="11" fill="#111111">
                     {l.amount} USDC
                   </text>
                 </>
@@ -173,35 +171,50 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
           );
         })}
       </g>
+
+      {/* nodes */}
       <g>
         {tick.nodes.map((n) => {
           const isActive = activeNodeIds.has(n.id);
-          const r = (8 + Math.sqrt(n.reputation || 4)) * (isActive ? 1.18 : 1);
+          const x = n.x ?? WIDTH / 2;
+          const y = n.y ?? HEIGHT / 2;
+
+          if (n.isAgent) {
+            const r = AGENT_R;
+            const [line1, line2] = splitLabel(n.label);
+            return (
+              <g key={n.id} transform={`translate(${x}, ${y})`}>
+                <circle
+                  r={r}
+                  fill={isActive ? 'rgba(17,17,17,0.10)' : 'rgba(17,17,17,0.05)'}
+                  stroke="#111111"
+                  strokeWidth={isActive ? 2.5 : 1.5}
+                  style={{ transition: 'stroke-width 0.2s, fill 0.2s' }}
+                />
+                <text textAnchor="middle" fontFamily="'JetBrains Mono', monospace" fontSize="10" fontWeight="500" fill="#111111" pointerEvents="none">
+                  {line2 ? (
+                    <>
+                      <tspan x="0" dy="-5">{line1}</tspan>
+                      <tspan x="0" dy="13">{line2}</tspan>
+                    </>
+                  ) : (
+                    <tspan x="0" dy="4">{line1}</tspan>
+                  )}
+                </text>
+              </g>
+            );
+          }
+
           return (
-            <g
-              key={n.id}
-              transform={`translate(${n.x ?? WIDTH / 2}, ${n.y ?? HEIGHT / 2})`}
-            >
-              {isActive && (
-                <circle r={r + 2} fill="none" stroke="#111111" strokeWidth="1.5">
-                  <animate attributeName="r" from={r + 2} to={r + 22} dur="1.1s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.6;0" dur="1.1s" repeatCount="indefinite" />
-                </circle>
-              )}
+            <g key={n.id} transform={`translate(${x}, ${y})`}>
               <circle
-                r={r}
-                fill={n.isAgent ? (isActive ? 'rgba(17,17,17,0.12)' : 'rgba(17,17,17,0.06)') : 'rgba(17,17,17,0.02)'}
-                stroke={n.isAgent ? '#111111' : '#a3a3a3'}
-                strokeWidth={isActive ? 2.25 : 1.5}
-                style={{ transition: 'stroke-width 0.2s, fill 0.2s' }}
+                r={8}
+                fill="rgba(17,17,17,0.02)"
+                stroke={isActive ? '#111111' : '#a3a3a3'}
+                strokeWidth={isActive ? 2 : 1}
+                style={{ transition: 'stroke-width 0.2s' }}
               />
-              <text
-                y={r + 16}
-                textAnchor="middle"
-                className="font-mono font-medium"
-                fontSize="11"
-                fill={n.isAgent ? '#111111' : '#737373'}
-              >
+              <text y={20} textAnchor="middle" fontFamily="monospace" fontSize="10" fill="#737373">
                 {n.label}
               </text>
             </g>
