@@ -256,7 +256,8 @@ function BillingTab({ address, summary }) {
 function TreasuryTab({ address }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ worker: '', dailyCap: '', categoryMask: 7, expiresAt: '', depositAmount: '' });
+  const defaultExpiry = new Date(Date.now() + 86400 * 30 * 1000).toISOString().slice(0, 16);
+  const [form, setForm] = useState({ worker: '', dailyCap: '', categoryMask: 7, expiresAt: defaultExpiry, depositAmount: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -280,9 +281,10 @@ function TreasuryTab({ address }) {
     setSubmitting(true);
     setError(null);
     try {
-      await api.treasuryAllocate({ treasury: address, ...form });
+      const expiresAt = form.expiresAt ? Math.floor(new Date(form.expiresAt).getTime() / 1000) : '';
+      await api.treasuryAllocate({ treasury: address, ...form, expiresAt });
       await load();
-      setForm({ worker: '', dailyCap: '', categoryMask: 7, expiresAt: '', depositAmount: '' });
+      setForm({ worker: '', dailyCap: '', categoryMask: 7, expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString().slice(0, 16), depositAmount: '' });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -357,11 +359,10 @@ function TreasuryTab({ address }) {
               </div>
             </div>
             <div>
-              <label className="text-xs text-neutral-500">Expires (unix timestamp)</label>
+              <label className="text-xs text-neutral-500">Expires</label>
               <input
-                type="number"
-                className="mt-1 w-full rounded border border-border px-3 py-1.5 text-sm font-mono bg-surface-2 focus:outline-none focus:border-ink"
-                placeholder={String(Math.floor(Date.now() / 1000) + 86400 * 30)}
+                type="datetime-local"
+                className="mt-1 w-full rounded border border-border px-3 py-1.5 text-sm bg-surface-2 focus:outline-none focus:border-ink"
                 value={form.expiresAt}
                 onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
               />
