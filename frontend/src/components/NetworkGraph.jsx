@@ -11,13 +11,6 @@ function shortAddr(addr) {
   return `${addr.slice(0, 6)}`;
 }
 
-function splitLabel(label = '') {
-  const words = label.split(' ');
-  if (words.length === 1) return [label, null];
-  const mid = Math.ceil(words.length / 2);
-  return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
-}
-
 /// Force-directed graph: one node per agent (sized by reputation) plus any wallet seen in
 /// recent payments that isn't a registered agent, one edge per recent payment. New edges
 /// (payments not seen on a previous render) pulse briefly with a traveling dot along the
@@ -192,27 +185,15 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
           const y = n.y ?? HEIGHT / 2;
 
           if (n.isAgent) {
-            const r = AGENT_R;
-            const [line1, line2] = splitLabel(n.label);
             return (
               <g key={n.id} transform={`translate(${x}, ${y})`}>
                 <circle
-                  r={r}
+                  r={AGENT_R}
                   fill={isActive ? 'rgba(17,17,17,0.10)' : 'rgba(17,17,17,0.05)'}
                   stroke="#111111"
                   strokeWidth={isActive ? 2.5 : 1.5}
                   style={{ transition: 'stroke-width 0.2s, fill 0.2s' }}
                 />
-                <text textAnchor="middle" fontFamily="'JetBrains Mono', monospace" fontSize="10" fontWeight="500" fill="#111111" pointerEvents="none">
-                  {line2 ? (
-                    <>
-                      <tspan x="0" dy="-5">{line1}</tspan>
-                      <tspan x="0" dy="13">{line2}</tspan>
-                    </>
-                  ) : (
-                    <tspan x="0" dy="4">{line1}</tspan>
-                  )}
-                </text>
               </g>
             );
           }
