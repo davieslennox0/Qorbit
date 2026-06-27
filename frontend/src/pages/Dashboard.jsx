@@ -54,15 +54,12 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Dashboard</h1>
-          <p className="text-neutral-500 text-sm mt-1">Live agent network on Arc testnet</p>
-        </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-neutral-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          live
-        </div>
+      <div>
+        <h1 className="font-display text-2xl font-semibold flex items-center gap-2">
+          Dashboard
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        </h1>
+        <p className="text-neutral-500 text-sm mt-1">Live agent network on Arc testnet</p>
       </div>
 
       {error && (
