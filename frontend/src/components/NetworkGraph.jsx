@@ -184,19 +184,7 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
           const x = n.x ?? WIDTH / 2;
           const y = n.y ?? HEIGHT / 2;
 
-          if (n.isAgent) {
-            return (
-              <g key={n.id} transform={`translate(${x}, ${y})`}>
-                <circle
-                  r={AGENT_R}
-                  fill={isActive ? 'rgba(17,17,17,0.10)' : 'rgba(17,17,17,0.05)'}
-                  stroke="#111111"
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                  style={{ transition: 'stroke-width 0.2s, fill 0.2s' }}
-                />
-              </g>
-            );
-          }
+          if (n.isAgent) return null;
 
           return (
             <g key={n.id} transform={`translate(${x}, ${y})`}>

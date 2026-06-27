@@ -14,8 +14,9 @@ const MIN_BALANCE = ethers.parseEther('0.01');
 const FUND_AMOUNT = ethers.parseEther('0.05');
 const MIN_TICK_MS = 15_000;
 const MAX_TICK_MS = 35_000;
-const MIN_AMOUNT = 0.0004;
-const MAX_AMOUNT = 0.0035;
+const MIN_AMOUNT = 0.002;
+const MAX_AMOUNT = 0.005;
+const PLATFORM_FEE = ethers.parseEther('0.001');
 
 const MEMOS = [
   'translation request',
@@ -78,7 +79,7 @@ async function tickSelfSovereign(sender, recipient, amount, memo) {
   const wallet = new ethers.Wallet(sender.privateKey, provider);
   const router = routerContract(wallet);
   const memoHash = ethers.keccak256(ethers.toUtf8Bytes(memo));
-  const tx = await router.pay(recipient.address, memoHash, { value: ethers.parseEther(amount) });
+  const tx = await router.pay(recipient.address, memoHash, { value: ethers.parseEther(amount) + PLATFORM_FEE });
   console.log(`${sender.name} -> ${recipient.name}: ${amount} (${memo}) [p2p] tx ${tx.hash}`);
   await tx.wait();
 }

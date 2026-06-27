@@ -105,7 +105,8 @@ router.post('/pay', async (req, res) => {
 
     const wallet = getWallet();
     const routerContractInstance = routerContract(wallet);
-    const value = ethers.parseEther(amount);
+    const PLATFORM_FEE = ethers.parseEther('0.001');
+    const value = ethers.parseEther(amount) + PLATFORM_FEE;
 
     // Layer 4 (Dilithium): dual-sign before settlement.
     const pqAuthorization = {
