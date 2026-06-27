@@ -181,9 +181,13 @@ function NetworkGraph({ agents = [], payments = [], labels = {} }) {
             <g
               key={n.id}
               transform={`translate(${n.x ?? WIDTH / 2}, ${n.y ?? HEIGHT / 2})`}
-              style={{ transition: 'transform 0.1s linear' }}
             >
-              {isActive && <circle r={r + 6} fill="rgba(17,17,17,0.08)" filter="url(#netGlow)" />}
+              {isActive && (
+                <circle r={r + 2} fill="none" stroke="#111111" strokeWidth="1.5">
+                  <animate attributeName="r" from={r + 2} to={r + 22} dur="1.1s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.6;0" dur="1.1s" repeatCount="indefinite" />
+                </circle>
+              )}
               <circle
                 r={r}
                 fill={n.isAgent ? (isActive ? 'rgba(17,17,17,0.12)' : 'rgba(17,17,17,0.06)') : 'rgba(17,17,17,0.02)'}

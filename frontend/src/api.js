@@ -59,7 +59,12 @@ function normalizePayment(raw) {
 // ERC-8004 agents carry an explicit `name` field; fall back to the hostname of the
 // serviceEndpoint for older registrations. Falls back to null (caller shows short address).
 function agentLabel(agent) {
-  if (agent?.name && agent.name !== 'Agent') return agent.name;
+  if (agent?.name && agent.name !== 'Agent') {
+    const name = agent.name;
+    return name.includes('-')
+      ? name.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      : name;
+  }
   if (!agent?.serviceEndpoint) return null;
   try {
     return new URL(agent.serviceEndpoint).hostname.split('.')[0];
