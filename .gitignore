@@ -14,3 +14,4 @@ cache/
 .DS_Store
 .claude/
 demo-agents.local.json
+backend/data/

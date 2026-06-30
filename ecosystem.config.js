@@ -32,5 +32,16 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
     },
+    {
+      name: 'qorbitpay-billing-cron',
+      cwd: './backend',
+      script: 'scripts/billing-cron.js',
+      env: {
+        NODE_ENV: 'production',
+        BILLING_INTERVAL_MS: '60000',
+      },
+      autorestart: true,
+      max_restarts: 10,
+    },
   ],
 };

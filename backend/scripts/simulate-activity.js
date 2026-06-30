@@ -12,8 +12,9 @@ import { routerContract } from '../src/services/contracts.js';
 /// they show up on the dashboard right alongside relayer-settled payments.
 const MIN_BALANCE = ethers.parseEther('0.01');
 const FUND_AMOUNT = ethers.parseEther('0.05');
-const MIN_TICK_MS = 15_000;
-const MAX_TICK_MS = 35_000;
+const MIN_TICK_MS = 30_000;
+const MAX_TICK_MS = 60_000;
+const FUND_CHECK_INTERVAL = 10;
 const MIN_AMOUNT = 0.002;
 const MAX_AMOUNT = 0.005;
 const PLATFORM_FEE = ethers.parseEther('0.001');
@@ -100,13 +101,15 @@ async function main() {
   const agents = loadDemoAgents();
   console.log(`activity simulator: ${agents.length} demo agents`);
 
+  let tickCount = 0;
   while (true) {
     try {
-      await ensureFunded(agents);
+      if (tickCount % FUND_CHECK_INTERVAL === 0) await ensureFunded(agents);
       await tick(agents);
     } catch (err) {
       console.error('tick failed:', err.message);
     }
+    tickCount++;
     await new Promise((r) => setTimeout(r, randomBetween(MIN_TICK_MS, MAX_TICK_MS)));
   }
 }

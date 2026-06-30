@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/app/receive', label: 'Receive' },
   { to: '/app/router', label: 'Router' },
   { to: '/app/fraud', label: 'Fraud' },
+  { to: '/app/agent', label: 'My Agent' },
 ];
 
 function Layout() {

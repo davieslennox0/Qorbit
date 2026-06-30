@@ -6,6 +6,7 @@ import Send from './pages/Send.jsx';
 import Receive from './pages/Receive.jsx';
 import RouterPage from './pages/Router.jsx';
 import Fraud from './pages/Fraud.jsx';
+import AgentDashboard from './pages/AgentDashboard.jsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="receive" element={<Receive />} />
           <Route path="router" element={<RouterPage />} />
           <Route path="fraud" element={<Fraud />} />
+          <Route path="agent" element={<AgentDashboard />} />
         </Route>
       </Routes>
     </BrowserRouter>
