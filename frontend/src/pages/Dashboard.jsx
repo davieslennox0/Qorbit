@@ -18,6 +18,7 @@ function StatBlock({ label, value }) {
 function Dashboard() {
   const [agents, setAgents] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [stats, setStats] = useState({ count: 0, totalVolume: 0 });
   const [displayLimit, setDisplayLimit] = useState(10);
   const [error, setError] = useState(null);
 
@@ -29,6 +30,7 @@ function Dashboard() {
         if (cancelled) return;
         setAgents(agentsRes.agents);
         setPayments(paymentsRes.payments);
+        setStats({ count: paymentsRes.count, totalVolume: paymentsRes.totalVolume });
         setError(null);
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -43,7 +45,6 @@ function Dashboard() {
   }, []);
 
   const labels = buildAgentLabels(agents);
-  const totalVolume = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const quantumCoverage = payments.length
     ? Math.round(
         (100 *
@@ -69,8 +70,8 @@ function Dashboard() {
 
       <div className="flex divide-x divide-border rounded-lg border border-border bg-surface">
         <StatBlock label="Agents" value={agents.length} />
-        <StatBlock label="Transactions" value={payments.length} />
-        <StatBlock label="Total volume processed" value={`${totalVolume.toFixed(4)} USDC`} />
+        <StatBlock label="Transactions" value={stats.count} />
+        <StatBlock label="Total volume processed" value={`${stats.totalVolume.toFixed(4)} USDC`} />
         <StatBlock label="Quantum coverage" value={`${quantumCoverage}%`} />
       </div>
 

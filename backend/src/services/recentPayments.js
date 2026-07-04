@@ -40,4 +40,9 @@ function getRecent(limit) {
   return limit ? buffer.slice(0, limit) : buffer.slice();
 }
 
-export { pushPayment, getRecent };
+function getStats() {
+  const totalVolume = buffer.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  return { count: buffer.length, totalVolume };
+}
+
+export { pushPayment, getRecent, getStats };

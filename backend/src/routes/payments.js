@@ -7,7 +7,7 @@ import { anchorNonce } from '../services/batchAnchor.js';
 import { parsePaymentHeader, X402PaymentError } from '../middleware/x402.js';
 import { runVqcFraudCheck, runQaoaRouter } from '../services/quantumBridge.js';
 import { dualSignPayment, attestOnChain } from '../middleware/pq-signing.js';
-import { pushPayment, getRecent } from '../services/recentPayments.js';
+import { pushPayment, getRecent, getStats } from '../services/recentPayments.js';
 
 const router = express.Router();
 const EXPLORER = process.env.ARC_TESTNET_EXPLORER || 'https://testnet.arcscan.app';
@@ -287,7 +287,8 @@ router.get('/agents', async (req, res) => {
 /// dashboard's live network graph (no websocket - the frontend polls this).
 router.get('/payments/recent', (req, res) => {
   const limit = Number(req.query.limit || 50);
-  res.json({ payments: getRecent(limit) });
+  const { count, totalVolume } = getStats();
+  res.json({ payments: getRecent(limit), count, totalVolume });
 });
 
 export default router;
